@@ -3019,7 +3019,7 @@ var ORIGINS = [
   {
     id:'mage', name:'学徒', emoji:'🔮',
     attr:{str:6,agi:8,int:18,cha:10,luk:8},
-    skill:{name:'奥术感知',emoji:'👁️',type:'被动',target:'自身',desc:'可见隐藏魔法陷阱',cost:0},
+    skill:{name:'奥术感知',emoji:'👁️',type:'增益',target:'自身',desc:'激活奥术感知，下次魔法攻击伤害+50%',cost:0},
     startSkills:[],  // 火矢后续通过技能训练学习
     story:'导师说你的天赋太危险。那天夜里学院起了火,你带着半本烧焦的笔记逃了出来。没有人追你,但你知道他们迟早会来。法杖是唯一相信你的东西。'
   },
@@ -3033,7 +3033,7 @@ var ORIGINS = [
   {
     id:'hunter', name:'猎人', emoji:'🏹',
     attr:{str:10,agi:18,int:8,cha:6,luk:8},
-    skill:{name:'陷阱感知',emoji:'🕸️',type:'被动',target:'自身',desc:'自动避开普通陷阱',cost:0},
+    skill:{name:'鹰眼锁定',emoji:'🎯',type:'增益',target:'自身',desc:'锁定目标，下次攻击必定暴击',cost:0},
     startSkills:[],
     story:'你追一头白鹿追了三天。它带你穿过森林,来到这片从未见过的湖畔。然后它消失了,只留下蹄印和清晨的雾。你决定留下来看看这里究竟有什么。'
   },
@@ -7487,6 +7487,11 @@ function calcSkillDmg(sk) {
     // hybrid or unspecified: average of both
     base += Math.floor((calcAtk() + calcMagicAtk()) * 0.3);
   }
+  // Arcane Sense: +50% magic damage on next spell
+  if (sk.damageType === 'magic' && G._nextMagicBoost) {
+    base = Math.floor(base * 1.5);
+    G._nextMagicBoost = false;
+  }
   // Apply weather modifier
   base = applyWeatherToDamage(base, sk.damageType === 'magic', G.location);
   return base;
@@ -10525,11 +10530,11 @@ function useOriginSkill() {
     G.battle.log.push('✨ 祈祷,恢复 ' + healAmt + ' HP');
     showHealPopup(healAmt);
   } else if (o.id === 'mage') {
-    var mAtk = calcMagicAtk();
-    G.battle.log.push('👁️ 奥术感知激活,魔攻 ' + mAtk);
+    G._nextMagicBoost = true;
+    G.battle.log.push('👁️ 奥术感知激活!下次魔法攻击伤害+50%');
   } else if (o.id === 'hunter') {
-    G.battle.log.push('🎯 鹰眼锁定,下次攻击必暴击');
     G._nextCrit = true;
+    G.battle.log.push('🎯 鹰眼锁定!下次攻击必定暴击');
   } else {
     G.battle.log.push('🔮 ' + o.skill.name + ':' + o.skill.desc);
   }
