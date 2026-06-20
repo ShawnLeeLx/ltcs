@@ -10094,7 +10094,7 @@ function renderBattle(msg) {
           var onCd = G._skillCooldowns && G._skillCooldowns[ssk.id] && G._skillCooldowns[ssk.id] > 0;
           var targetIcon = ssk.target === '群攻' ? '🎯A' : ssk.target === '自身' ? '🛡️' : '🎯1';
           var cdLabel = onCd ? ' <span class="skill-cd">⏳' + G._skillCooldowns[ssk.id] + '</span>' : (ssk.cd > 0 ? ' <span class="skill-cd-hint">CD' + ssk.cd + '</span>' : '');
-          html += '<button class="btn btn-skill' + (!canUse || onCd ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd ? '' : ' onclick="G._battleAction=\'skill:\'' + ssk.id + '\';' + (ssk.target === '自身' ? 'playerSkill(\'' + ssk.id + '\')' : 'toast(\'选择施法目标\')') + '"') + '>' + ssk.emoji + ' ' + ssk.name + ' <span class="skill-meta-inline">' + targetIcon + '</span><span class="skill-cost">' + ssk.cost + '💧</span>' + cdLabel + '</button>';
+          html += '<button class="btn btn-skill' + (!canUse || onCd ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd ? '' : ' onclick="G._battleAction=\'skill:' + ssk.id + '\';' + (ssk.target === '自身' ? 'playerSkill(\'' + ssk.id + '\')' : 'toast(\'选择施法目标\')') + '"') + '>' + ssk.emoji + ' ' + ssk.name + ' <span class="skill-meta-inline">' + targetIcon + '</span><span class="skill-cost">' + ssk.cost + '💧</span>' + cdLabel + '</button>';
         }
       }
     }
@@ -10107,7 +10107,7 @@ function renderBattle(msg) {
           var onCd2 = G._skillCooldowns && G._skillCooldowns[csk.id] && G._skillCooldowns[csk.id] > 0;
           var targetIcon2 = csk.target === '群攻' ? '🎯A' : csk.target === '自身' ? '🛡️' : '🎯1';
           var cdLabel2 = onCd2 ? ' <span class="skill-cd">⏳' + G._skillCooldowns[csk.id] + '</span>' : (csk.cd > 0 ? ' <span class="skill-cd-hint">CD' + csk.cd + '</span>' : '');
-          html += '<button class="btn btn-skill' + (!canUse2 || onCd2 ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd2 ? '' : ' onclick="G._battleAction=\'skill:\'' + csk.id + '\';' + (csk.target === '自身' ? 'playerSkill(\'' + csk.id + '\')' : 'toast(\'选择攻击目标\')') + '"') + '>' + csk.emoji + ' ' + csk.name + ' <span class="skill-meta-inline">' + targetIcon2 + '</span><span class="skill-cost">' + csk.cost + '💧</span>' + cdLabel2 + '</button>';
+          html += '<button class="btn btn-skill' + (!canUse2 || onCd2 ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd2 ? '' : ' onclick="G._battleAction=\'skill:' + csk.id + '\';' + (csk.target === '自身' ? 'playerSkill(\'' + csk.id + '\')' : 'toast(\'选择攻击目标\')') + '"') + '>' + csk.emoji + ' ' + csk.name + ' <span class="skill-meta-inline">' + targetIcon2 + '</span><span class="skill-cost">' + csk.cost + '💧</span>' + cdLabel2 + '</button>';
         }
       }
     }
