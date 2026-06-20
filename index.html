@@ -1950,6 +1950,10 @@ body {
 </head>
 <body>
 <div id="status"></div>
+<div id="audio-ctrl" style="position:fixed;top:4px;right:4px;z-index:9999;display:flex;gap:2px;">
+  <button id="btn-sfx" onclick="toggleSfxBtn()" style="border:none;background:none;font-size:14px;cursor:pointer;padding:2px 4px;opacity:0.6" title="SFX">🔊</button>
+  <button id="btn-bgm" onclick="toggleBgmBtn()" style="border:none;background:none;font-size:14px;cursor:pointer;padding:2px 4px;opacity:0.6" title="BGM">🎵</button>
+</div>
 <div id="game"></div>
 <div id="toast" class="toast-container"></div>
 <!-- D3: Mobile bottom nav -->
@@ -3326,6 +3330,7 @@ function checkAchievements() {
 }
 
 function sceneAchievements() {
+  BGM.play('menu');
   checkAchievements();
   var filter = G._achFilter || 'all';
   var html = '';
@@ -7726,6 +7731,181 @@ SFX.init();
   });
 })();
 
+// ═══════════════════════════════════════════════════════════
+// BGM ENGINE (8-bit chiptune, Web Audio API, zero dependencies)
+// ═══════════════════════════════════════════════════════════
+var BGM = (function() {
+  var _ctx = null;
+  var _gain = null;
+  var _current = null;  // {name, intervalId, oscillators:[]}
+  var _vol = 0.15;    // BGM 默认音量（低于 SFX）
+  var _muted = false;
+  var _enabled = true;
+
+  function audioCtx() {
+    if (!_ctx) {
+      try { _ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e) { _enabled = false; return null; }
+    }
+    if (_ctx.state === 'suspended') _ctx.resume();
+    return _ctx;
+  }
+
+  // ═══ 乐曲定义（频率序列，循环播放）═══
+  // 每组音符: [freq, duration, waveform?, volMod?]
+  // 循环自动，每首曲子用 setTimeout 序列循环
+
+  // 城镇BGM: 欢快温馨的 8-bit 旋律（C大调，120bpm）
+  var TOWN_LOOP = [
+    [262,0.18],[294,0.18],[330,0.18],[349,0.18],
+    [392,0.27],[349,0.18],[330,0.36],
+    [330,0.18],[349,0.18],[392,0.18],[440,0.18],
+    [494,0.27],[440,0.18],[392,0.36],
+    [392,0.18],[440,0.18],[494,0.18],[523,0.18],
+    [587,0.27],[523,0.18],[494,0.36],
+    [262,0.18],[330,0.18],[392,0.18],[494,0.18],
+    [523,0.45],[440,0.18],[392,0.63]
+  ];
+
+  // 战斗BGM: 紧张快节奏（半音阶下，90bpm 急）
+  var BATTLE_LOOP = [
+    [440,0.12],[494,0.12],[523,0.12],[587,0.12],
+    [659,0.18],[587,0.12],[523,0.12],
+    [440,0.12],[523,0.12],[587,0.12],[659,0.12],
+    [698,0.18],[659,0.12],[587,0.12],
+    [523,0.12],[587,0.12],[659,0.12],[523,0.12],
+    [440,0.27],[392,0.18],[440,0.45],
+    [330,0.12],[392,0.12],[440,0.12],[523,0.12],
+    [587,0.18],[523,0.12],[440,0.45]
+  ];
+
+  // 深渊BGM: 阴郁低沉（D小调，慢）
+  var ABYSS_LOOP = [
+    [147,0.3],[165,0.3],[175,0.3],[165,0.3],
+    [147,0.45],[131,0.3],[147,0.6],
+    [165,0.3],[175,0.3],[196,0.3],[175,0.3],
+    [165,0.45],[147,0.3],[131,0.6],
+    [131,0.3],[147,0.3],[165,0.3],[147,0.3],
+    [131,0.45],[117,0.3],[131,0.6]
+  ];
+
+  // 通用/菜单 BGM: 柔和旋律
+  var MENU_LOOP = [
+    [392,0.25],[440,0.25],[494,0.25],[523,0.25],
+    [494,0.25],[440,0.25],[392,0.5],
+    [349,0.25],[392,0.25],[440,0.25],[494,0.25],
+    [440,0.25],[392,0.25],[349,0.5]
+  ];
+
+  var TRACKS = {
+    town:   { loop: TOWN_LOOP, wave: 'square',  vol: 0.15 },
+    battle: { loop: BATTLE_LOOP, wave: 'sawtooth', vol: 0.12 },
+    abyss:  { loop: ABYSS_LOOP,  wave: 'sawtooth', vol: 0.10 },
+    menu:   { loop: MENU_LOOP,   wave: 'triangle', vol: 0.10 }
+  };
+
+  // 播放单音符（用于 BGM 序列）
+  function playNote(freq, duration, wave, vol) {
+    var c = audioCtx();
+    if (!c || _muted || !_enabled) return;
+    var osc = c.createOscillator();
+    var g = c.createGain();
+    osc.type = wave || 'square';
+    osc.frequency.value = freq;
+    var v = (_vol * (vol || 1)) * (_muted ? 0 : 1);
+    g.gain.setValueAtTime(v, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + duration);
+    osc.connect(g);
+    g.connect(_gain || c.destination);
+    osc.start(c.currentTime);
+    osc.stop(c.currentTime + duration + 0.05);
+  }
+
+  // 停止当前 BGM
+  function stop() {
+    if (_current && _current.timer) {
+      clearTimeout(_current.timer);
+      _current.timer = null;
+    }
+    _current = null;
+  }
+
+  // 启动 BGM 循环
+  function start(name) {
+    if (!TRACKS[name] || !_enabled) return;
+    stop(); // 先停旧的
+    var track = TRACKS[name];
+    var loop = track.loop;
+    var wave = track.wave;
+    var tIdx = 0;
+
+    // 建立 master gain
+    var c = audioCtx();
+    if (c && !_gain) {
+      _gain = c.createGain();
+      _gain.gain.value = _muted ? 0 : _vol;
+      _gain.connect(c.destination);
+    }
+
+    function scheduleNext() {
+      if (!_current || _current.name !== name) return; // 已被 stop/切换
+      var note = loop[tIdx % loop.length];
+      playNote(note[0], note[1], wave, track.vol);
+      tIdx++;
+      _current.timer = setTimeout(scheduleNext, note[1] * 1000);
+    }
+
+    _current = { name: name, timer: null };
+    scheduleNext();
+  }
+
+  return {
+    play: function(name) {
+      if (!TRACKS[name]) return;
+      if (_current && _current.name === name) return; // 已在播
+      start(name);
+    },
+    stop: stop,
+    toggleMute: function() {
+      _muted = !_muted;
+      if (_gain) _gain.gain.value = _muted ? 0 : _vol;
+      try { localStorage.setItem('bgm_muted', _muted ? '1' : '0'); } catch(e) {}
+      return _muted;
+    },
+    muted: function() { return _muted; },
+    setVol: function(v) {
+      _vol = Math.max(0, Math.min(1, v));
+      if (_gain) _gain.gain.value = _muted ? 0 : _vol;
+      try { localStorage.setItem('bgm_vol', _vol); } catch(e) {}
+    },
+    vol: function() { return _vol; },
+    init: function() {
+      try {
+        var m = localStorage.getItem('bgm_muted');
+        if (m === '1') _muted = true;
+        var v = localStorage.getItem('bgm_vol');
+        if (v) _vol = Math.max(0, Math.min(1, parseFloat(v)));
+      } catch(e) {}
+    },
+    current: function() { return _current ? _current.name : null; }
+  };
+})();
+
+BGM.init();
+
+// Audio control buttons
+function toggleSfxBtn() {
+  var muted = SFX.toggleMute();
+  var btn = document.getElementById('btn-sfx');
+  if (btn) { btn.textContent = muted ? '🔇' : '🔊'; btn.style.opacity = muted ? '0.3' : '0.6'; }
+}
+function toggleBgmBtn() {
+  var muted = BGM.toggleMute();
+  var btn = document.getElementById('btn-bgm');
+  if (btn) { btn.textContent = muted ? '🔇' : '🎵'; btn.style.opacity = muted ? '0.3' : '0.6'; }
+  if (muted) BGM.stop(); else { var c = BGM.current(); if (c) BGM.play(c); }
+}
+
 function render(html) { var el = document.getElementById('game'); if (el) el.innerHTML = html; }
 function toast(msg) { var el = document.getElementById('toast'); if (el) { el.textContent = msg; el.style.opacity = 1; setTimeout(function() { el.style.opacity = 0; }, 2000); } }
 
@@ -7735,6 +7915,7 @@ function toast(msg) { var el = document.getElementById('toast'); if (el) { el.te
 // ═══════════════════════════════════════════════════════════
 
 function sceneIntro() {
+  BGM.play('menu');
   var html = '';
   html += '<div class="scene-title">龙途传说</div>';
   html += '<div class="scene-text" style="text-align:center;line-height:2">';
@@ -8167,6 +8348,7 @@ function sceneWorldMapOverview() {
 }
 
 function sceneWorldMap() {
+  BGM.play('town');
   tickWeather();
   // If player is at a non-town location with a mini-map, go there instead
   // (unless user explicitly navigated to world map via the button)
@@ -9373,6 +9555,7 @@ function miniMapStone() {
 
 // Universal battle entry — accepts an enemy object or array of enemy objects
 function startBattleWith(enemyOrArray, opts) {
+  BGM.play('battle');
   var enemies = Array.isArray(enemyOrArray) ? enemyOrArray : [enemyOrArray];
   for (var i = 0; i < enemies.length; i++) {
     var e = enemies[i];
@@ -13330,6 +13513,7 @@ function endBattle() {
   
   // A3: Wave battle — if more waves remain, show intermission instead of full victory
   if (b && b.waves && b.wave < b.totalWaves - 1) {
+    BGM.stop(); // 波间停 BGM
     G.inBattle = false;
     if (G._autoBattle) stopAutoBattle();
     SFX.play('waveClear');
@@ -13677,6 +13861,7 @@ function goToAttrAlloc() {
 }
 
 function afterBattleContinue() {
+  BGM.play('town');
   // A3: Clear wave temp buffs
   if (G._waveTempAtk) delete G._waveTempAtk;
   if (G._waveTempDef) delete G._waveTempDef;
@@ -13713,6 +13898,7 @@ function doLevelUp() {
 }
 
 function sceneDeath() {
+  BGM.stop();
   G.totalBattlesLost++;
   SFX.play('death');
   var lossGold = Math.floor(G.gold * 0.1);
@@ -13862,6 +14048,7 @@ function sceneStory() {
 }
 
 function sceneTown() {
+  BGM.play('town');
   G._currentScene = 'sceneTown';
   G._lastSaveScene = 'sceneTown';
   tickWeather();
@@ -14559,6 +14746,7 @@ function talkToNpc(npcKey) {
 
 
 function sceneBlacksmith() {
+  BGM.play('town');
   G._currentScene = 'sceneBlacksmith';
   var loc = LOCATIONS[G.location];
   var items = (loc && loc.smithItems) ? loc.smithItems : [
@@ -15049,6 +15237,7 @@ function finishCraft(recipeIdx, affixChoiceIdx) {
 }
 
 function sceneTraining() {
+  BGM.play('town');
   G._currentScene = 'sceneTraining';
   var html = '';
   html += '<div class="scene-title">🏋️ 训练场</div>';
@@ -15783,6 +15972,7 @@ function spinWheel() {
 // ═══════════════════════════════════════════════════════════
 
 function sceneGuild() {
+  BGM.play('town');
   G._currentScene = 'sceneGuild';
   checkStoryTriggers('visit_place', 'guild');
   var html = '';
@@ -16906,6 +17096,7 @@ function sceneEquipmentFromExplore() { _equipmentReturnTo = 'renderMiniMap'; sce
 function sceneEquipmentFromBattle() { _equipmentReturnTo = 'renderBattle'; sceneEquipment(); }
 
 function sceneEquipment() {
+  BGM.play('menu');
   G._currentScene = 'sceneEquipment';
   var baseStr = G.str || 0, baseAgi = G.agi || 0, baseInt = G.int || 0;
   var baseCha = G.cha || 0, baseLuk = G.luk || 0;
@@ -17136,6 +17327,7 @@ function _equipmentGoBack() {
 }
 
 function sceneInventory() {
+  BGM.play('menu');
   var html = '';
   html += '<div class="scene-title">🎒 背包</div>';
   html += '<div class="money-display">💰 ' + G.gold + ' 金币</div>';
@@ -18024,6 +18216,7 @@ var DD_EVENTS = [
 ];
 
 function sceneDeepDive() {
+  BGM.play('abyss');
   G._currentScene = 'sceneDeepDive';
   G._lastSaveScene = 'sceneDeepDive';
   if (!G.dd) G.dd = { bestFloor:0, totalRuns:0, totalKills:0, ddCoins:0, permBuffs:{} };
