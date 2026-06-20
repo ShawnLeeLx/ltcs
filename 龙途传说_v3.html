@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>龙途传说 — 试玩版 v3</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d1a;color:#d4c4a0;font-family:'PingFang SC','Microsoft YaHei','SimSun',monospace;min-height:100vh;padding:10px}
+.container{max-width:480px;margin:0 auto}
+.game-title{text-align:center;font-size:20px;color:#d4a017;padding:8px 0 2px;letter-spacing:4px;text-shadow:0 0 15px rgba(212,160,23,0.4)}
+.game-subtitle{text-align:center;color:#6b5a3a;font-size:11px;margin-bottom:6px}
+.status-bar{background:#12121f;border:1px solid #3a3a2a;border-radius:4px;padding:6px 10px;margin-bottom:6px;font-size:12px;display:none;font-family:monospace}
+.status-bar.show{display:block}
+.srow{display:flex;justify-content:space-between;margin:2px 0}
+.shp{color:#c44}.smp{color:#48f}.sgold{color:#d4a017}.sxp{color:#4a4}
+.scroll-frame{border:2px solid #6b5a3a;border-radius:4px;background:linear-gradient(180deg,#1a1a2e,#15152a);box-shadow:inset 0 0 30px rgba(0,0,0,0.5),0 0 10px rgba(107,90,58,0.3);padding:12px;position:relative}
+.scroll-frame::before,.scroll-frame::after{content:'═══════════════════════════';display:block;text-align:center;color:#6b5a3a;font-size:10px;letter-spacing:2px;padding:2px 0}
+.panel{border:1px solid #4a3a2a;border-radius:4px;background:#0f0f1e;padding:12px;margin-bottom:6px;min-height:260px;max-height:500px;overflow-y:auto;font-size:13px;line-height:1.9}
+.panel::-webkit-scrollbar{width:3px}.panel::-webkit-scrollbar-track{background:#1a1a2e}.panel::-webkit-scrollbar-thumb{background:#4a3a2a;border-radius:2px}
+.scene{color:#b8a880;margin-bottom:8px}.scene em{color:#d4a017;font-style:normal}
+.divider{border:none;border-top:1px dashed #3a3a2a;margin:6px 0}
+.choices{display:flex;flex-direction:column;gap:5px}
+.btn{background:#1a1a28;border:1px solid #4a3a2a;border-radius:4px;color:#b8a880;padding:7px 10px;text-align:left;cursor:pointer;font-size:12px;transition:all 0.12s;line-height:1.5;font-family:inherit}
+.btn:hover{background:#252535;border-color:#d4a017;color:#d4a017}.btn:active{transform:scale(0.98)}
+.btn .lbl{color:#d4a017;font-weight:bold;margin-right:3px}
+.enemy-box{background:#151522;border:1px solid #3a2a2a;border-radius:3px;padding:8px;margin:4px 0;cursor:pointer;transition:all 0.15s}
+.enemy-box:hover{border-color:#d4a017;background:#1a1a2e}
+.enemy-box.selected{border-color:#d4a017;background:#1a1a28}
+.enemy-box.dead{opacity:0.4;cursor:default;border-color:#2a2a2a}
+.ascii-art{font-family:monospace;font-size:10px;color:#6b8a5a;white-space:pre;line-height:1.2;margin:4px 0}
+.hpbar{background:#2a1a1a;border:1px solid #5a2a2a;height:14px;border-radius:2px;overflow:hidden;margin:2px 0}
+.hpfill{background:#c44;height:100%;transition:width 0.3s}
+.mpbar{background:#1a1a2a;border:1px solid #2a2a5a;height:10px;border-radius:2px;overflow:hidden;margin:2px 0}
+.mpfill{background:#48f;height:100%;transition:width 0.3s}
+.xpfbar{background:#1a2a1a;border:1px solid #2a5a2a;height:8px;border-radius:2px;overflow:hidden;margin:2px 0}
+.xpfill{background:#4a4;height:100%;transition:width 0.3s}
+.town-map{font-family:monospace;font-size:11px;color:#6b5a3a;text-align:center;white-space:pre;line-height:1.4;padding:8px;background:#0f0f1e;border:1px solid #3a3a2a;border-radius:4px;margin:6px 0}
+.town-map .bld{color:#d4a017;cursor:pointer;font-weight:bold}
+.town-map .bld:hover{text-decoration:underline}
+.world-map{font-family:monospace;font-size:10px;color:#5a5a4a;text-align:center;white-space:pre;line-height:1.6;padding:8px;background:#0a0a14;border:1px solid #2a2a1a;border-radius:4px;margin:6px 0}
+.world-map .loc{color:#d4a017;cursor:pointer;font-weight:bold}
+.world-map .loc:hover{text-decoration:underline}
+.world-map .cur{color:#f80;font-weight:bold}
+.world-map .locked{color:#3a3a3a;cursor:default}
+.name-input{width:100%;padding:8px;background:#1a1a28;border:1px solid #4a3a2a;border-radius:4px;color:#d4a017;font-size:14px;text-align:center;font-family:inherit}
+.name-input:focus{outline:none;border-color:#d4a017}
+.attr-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1a1a28}
+.attr-name{color:#b8a880;width:90px;font-size:12px}
+.attr-val{color:#d4a017;width:28px;text-align:center;font-weight:bold}
+.attr-hint{color:#5a5a4a;font-size:10px;flex:1}
+.attr-btns{display:flex;gap:6px}
+.abtn{width:26px;height:26px;border:1px solid #4a3a2a;border-radius:3px;background:#1a1a28;color:#b8a880;font-size:14px;cursor:pointer;font-family:inherit}
+.abtn:hover{background:#252535;border-color:#d4a017}
+.abtn:disabled{opacity:0.2;cursor:not-allowed}
+.pts-left{text-align:center;color:#d4a017;font-size:13px;margin:6px 0}
+.confirm-btn{display:block;width:100%;padding:9px;background:linear-gradient(135deg,#d4a017,#b88a10);border:none;border-radius:4px;color:#0d0d1a;font-size:13px;font-weight:bold;cursor:pointer;margin-top:8px;font-family:inherit}
+.confirm-btn:hover{filter:brightness(1.1)}.confirm-btn:disabled{opacity:0.3;cursor:not-allowed}
+.cancel-btn{display:block;width:100%;padding:8px;background:#2a2a2a;border:1px solid #4a4a4a;border-radius:4px;color:#888;font-size:12px;cursor:pointer;margin-top:4px;font-family:inherit}
+.sk-card{background:#1a1a28;border:1px solid #3a3a2a;border-radius:4px;padding:8px;margin:4px 0;cursor:pointer}
+.sk-card:hover{border-color:#d4a017;background:#1e1e30}
+.sk-name{color:#d4a017;font-weight:bold;font-size:13px}
+.sk-desc{color:#7a7a6a;font-size:11px;margin-top:2px}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#d4a017;color:#0d0d1a;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:bold;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}.toast.lvl{background:linear-gradient(135deg,#d4a017,#f44);font-size:14px;padding:8px 20px}
+.rarity-fine{color:#5c5}.rarity-rare{color:#48f}.rarity-epic{color:#a5a}.rarity-legendary{color:#f80}
+.req-met{color:#5c5}.req-not{color:#c44}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="game-title">⚔ 龙途传说 ⚔</div>
+<div class="game-subtitle">试玩版 v3</div>
+<div class="status-bar" id="statusBar">
+<div class="srow"><span id="dispName"></span><span>Lv.<em id="dispLv">1</em></span><span class="sgold">💰<em id="dispGold">50</em></span></div>
+<div class="srow"><span class="shp">HP <em id="dispHp">80</em>/<em id="dispMhp">80</em></span><span class="smp">MP <em id="dispMp">60</em>/<em id="dispMmp">60</em></span></div>
+<div class="srow"><span class="sxp">EXP <em id="dispXp">0</em>/<em id="dispNxp">100</em></span><span>属性点<em id="dispAp">0</em></span></div>
+</div>
+<div class="scroll-frame">
+<div class="panel" id="panel"></div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="game_v3.js"></script>
+</body>
+</html>

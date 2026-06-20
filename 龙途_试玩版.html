@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>龙途：商路与传奇 — 试玩版</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    color: #e8d5b7;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    min-height: 100vh;
+    padding: 12px;
+  }
+  .container { max-width: 480px; margin: 0 auto; }
+
+  /* Title */
+  .game-title {
+    text-align: center;
+    font-size: 22px;
+    color: #f0c040;
+    padding: 12px 0 6px;
+    text-shadow: 0 0 20px #f0c04088;
+    letter-spacing: 2px;
+  }
+  .game-subtitle {
+    text-align: center;
+    color: #8a7a5a;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  /* Status Bar */
+  .status-bar {
+    background: #2a2a3e;
+    border: 1px solid #4a4a6a;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    display: none;
+  }
+  .status-bar.show { display: block; }
+  .status-row { display: flex; justify-content: space-between; margin: 3px 0; }
+  .stat-hp { color: #e55; }
+  .stat-mp { color: #5af; }
+  .stat-gold { color: #f0c040; }
+  .stat-xp { color: #5f5; }
+
+  /* Main Panel */
+  .panel {
+    background: #1e1e32;
+    border: 1px solid #3a3a5a;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 8px;
+    min-height: 300px;
+    max-height: 420px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .panel::-webkit-scrollbar { width: 4px; }
+  .panel::-webkit-scrollbar-track { background: #2a2a3e; }
+  .panel::-webkit-scrollbar-thumb { background: #5a5a8a; border-radius: 2px; }
+
+  /* Scene text */
+  .scene-text { color: #c8b890; margin-bottom: 10px; }
+  .scene-text em { color: #f0c040; font-style: normal; }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid #3a3a5a;
+    margin: 8px 0;
+  }
+
+  /* Choices */
+  .choices { display: flex; flex-direction: column; gap: 6px; }
+  .choice-btn {
+    background: #2a2a3e;
+    border: 1px solid #5a5a8a;
+    border-radius: 6px;
+    color: #e8d5b7;
+    padding: 9px 12px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+    line-height: 1.6;
+  }
+  .choice-btn:hover {
+    background: #3a3a5e;
+    border-color: #f0c040;
+    color: #f0c040;
+  }
+  .choice-btn:active { transform: scale(0.98); }
+  .choice-btn .label { color: #f0c040; font-weight: bold; margin-right: 4px; }
+
+  /* Combat UI */
+  .enemy-hp-bar {
+    background: #3a1a1a;
+    border: 1px solid #8a3a3a;
+    border-radius: 4px;
+    height: 18px;
+    margin: 4px 0 8px;
+    overflow: hidden;
+  }
+  .enemy-hp-fill {
+    background: linear-gradient(90deg, #e55, #c33);
+    height: 100%;
+    transition: width 0.3s;
+  }
+  .player-hp-bar {
+    background: #1a3a1a;
+    border: 1px solid #3a8a3a;
+    border-radius: 4px;
+    height: 14px;
+    margin: 3px 0;
+    overflow: hidden;
+  }
+  .player-hp-fill {
+    background: linear-gradient(90deg, #5c5, #3a3);
+    height: 100%;
+    transition: width 0.3s;
+  }
+  .player-mp-fill {
+    background: linear-gradient(90deg, #5af, #38c);
+    height: 100%;
+    transition: width 0.3s;
+  }
+  .combat-log { font-size: 12px; color: #9a9aba; margin: 4px 0; }
+  .damage-text { color: #e55; }
+  .heal-text { color: #5c5; }
+  .magic-text { color: #5af; }
+  .crit-text { color: #f0c040; font-weight: bold; }
+
+  /* Attribute allocation */
+  .attr-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #2a2a3e;
+  }
+  .attr-name { color: #c8b890; width: 60px; }
+  .attr-value { color: #f0c040; width: 30px; text-align: center; }
+  .attr-btns { display: flex; gap: 8px; }
+  .attr-btn {
+    width: 28px; height: 28px;
+    border: 1px solid #5a5a8a;
+    border-radius: 4px;
+    background: #2a2a3e;
+    color: #e8d5b7;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+  .attr-btn:hover { background: #3a3a5e; border-color: #f0c040; }
+  .attr-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .attr-hint { color: #7a6a4a; font-size: 11px; margin-left: 6px; }
+  .points-left { text-align: center; color: #f0c040; font-size: 14px; margin: 8px 0; }
+
+  /* Skill cards */
+  .skill-card {
+    background: #2a2a3e;
+    border: 1px solid #4a4a6a;
+    border-radius: 6px;
+    padding: 10px;
+    margin: 6px 0;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .skill-card:hover { border-color: #f0c040; background: #3a3a5e; }
+  .skill-name { color: #f0c040; font-weight: bold; }
+  .skill-desc { color: #9a9aba; font-size: 12px; margin-top: 3px; }
+  .skill-cost { color: #5af; font-size: 12px; }
+
+  /* Market */
+  .market-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #2a2a3e;
+  }
+  .market-name { color: #c8b890; }
+  .market-price { color: #f0c040; font-size: 12px; }
+  .market-trend { font-size: 12px; }
+  .trend-up { color: #e55; }
+  .trend-down { color: #5c5; }
+  .trend-stable { color: #888; }
+
+  /* Inventory */
+  .inv-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #2a2a3e;
+    font-size: 12px;
+  }
+  .inv-name { color: #c8b890; }
+  .inv-slot { color: #7a6a4a; }
+  .rarity-common { color: #c8c8c8; }
+  .rarity-fine { color: #5f5; }
+  .rarity-rare { color: #5af; }
+  .rarity-epic { color: #a5a; }
+  .rarity-legendary { color: #f80; }
+
+  /* Notification toast */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f0c040;
+    color: #1a1a2e;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+  .toast.levelup {
+    background: linear-gradient(135deg, #f0c040, #ff6b6b);
+    font-size: 15px;
+    padding: 10px 28px;
+  }
+
+  /* Confirm button */
+  .confirm-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, #f0c040, #e0a030);
+    border: none;
+    border-radius: 6px;
+    color: #1a1a2e;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.15s;
+  }
+  .confirm-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
+  .confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
+
+  /* Chapter end */
+  .chapter-end {
+    text-align: center;
+    padding: 20px;
+  }
+  .chapter-end h2 { color: #f0c040; font-size: 18px; margin-bottom: 10px; }
+  .chapter-end p { color: #9a9aba; font-size: 13px; margin: 4px 0; }
+
+  /* Intro screen */
+  .intro-screen { text-align: center; padding: 20px 0; }
+  .intro-screen h1 { color: #f0c040; font-size: 26px; margin-bottom: 4px; text-shadow: 0 0 30px #f0c04066; }
+  .intro-screen p { color: #8a7a5a; font-size: 12px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="game-title">⚔️ 龙途：商路与传奇 ⚔️</div>
+<div class="game-subtitle">第一章：起源 · 试玩版</div>
+
+<!-- Status Bar (shown after character created) -->
+<div class="status-bar" id="statusBar">
+  <div class="status-row">
+    <span>等级 <em id="dispLevel">1</em></span>
+    <span class="stat-gold">💰 <em id="dispGold">50</em></span>
+  </div>
+  <div class="status-row">
+    <span class="stat-hp">❤️ <em id="dispHP">80</em>/<em id="dispMaxHP">80</em></span>
+    <span class="stat-mp">💧 <em id="dispMP">60</em>/<em id="dispMaxMP">60</em></span>
+  </div>
+  <div class="status-row">
+    <span class="stat-xp">⭐ <em id="dispXP">0</em>/<em id="dispNextXP">100</em></span>
+    <span>属性点 <em id="dispAttrPts">0</em></span>
+  </div>
+</div>
+
+<!-- Main Panel -->
+<div class="panel" id="mainPanel">
+  <!-- Content injected by JS -->
+</div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// GAME DATA
+// ══════════════════════════════════════════════════════
+
+const ORIGINS = [
+  { id:'mercenary', name:'佣兵', emoji:'⚔️', desc:'战场幸存者', stats:{str:14,agi:12,int:8,cha:8,luk:8}, skill:{name:'战吼',desc:'3回合内攻击+15%'}, equip:['铁剑','皮甲'] },
+  { id:'apprentice', name:'学徒', emoji:'🎓', desc:'魔法学院逃亡者', stats:{str:8,agi:8,int:14,cha:10,luk:10}, skill:{name:'奥术感知',desc:'可侦测魔法陷阱'}, equip:['法杖','学徒袍'] },
+  { id:'merchant', name:'行商', emoji:'🛣️', desc:'破产商人', stats:{str:8,agi:10,int:10,cha:14,luk:8}, skill:{name:'讨价还价',desc:'商店首笔交易8折'}, equip:['商人短刀','行商大衣'] },
+  { id:'hunter', name:'猎人', emoji:'🌿', desc:'森林猎人', stats:{str:10,agi:14,int:8,cha:8,luk:10}, skill:{name:'陷阱感知',desc:'迷宫中可见陷阱位置'}, equip:['猎弓','皮靴'] },
+  { id:'gambler', name:'赌徒', emoji:'🎲', desc:'赌桌上的幸运儿', stats:{str:8,agi:10,int:10,cha:8,luk:14}, skill:{name:'孤注一掷',desc:'胜则伤害×2，败则自伤30%'}, equip:['幸运硬币','赌徒手套'] },
+  { id:'pilgrim', name:'朝圣者', emoji:'🙏', desc:'寻找救赎的旅人', stats:{str:8,agi:8,int:12,cha:12,luk:10}, skill:{name:'祈祷',desc:'每场战斗自动恢复10%HP'}, equip:['圣符','朝圣者斗篷'] },
+];
+
+const ENEMIES = {
+  goblin: { name:'哥布林', hp:35, atk:12, emoji:'👺', xp:30, gold:[8,15], level:1 },
+  goblin2: { name:'哥布林战士', hp:45, atk:16, emoji:'👹', xp:40, gold:[12,20], level:2 },
+  goblinArcher: { name:'哥布林射手', hp:30, atk:14, emoji:'🏹', xp:35, gold:[10,18], level:2 },
+  darkApprentice: { name:'黑暗学徒', hp:180, atk:28, emoji:'💀', xp:300, gold:[80,150], level:5, skills:['暗影箭'], isBoss:true },
+};
+
+const SKILLS = [
+  { id:'fireArrow', name:'🔥 火焰箭', desc:'造成35-45火焰伤害，消耗15MP', cost:15, type:'magic', dmg:[35,45], target:'single' },
+  { id:'magicMissile', name:'✨ 魔法飞弹', desc:'发射3枚飞弹，每枚10-15伤害，消耗18MP', cost:18, type:'magic', dmg:[10,15], count:3, target:'single' },
+  { id:'heal', name:'💚 治疗术', desc:'恢复25-35生命值，消耗15MP', cost:15, type:'heal', heal:[25,35] },
+  { id:'iceArmor', name:'❄️ 冰甲', desc:'防御+15%，近战攻击20%冻结敌人（被动）', cost:0, type:'passive' },
+  { id:'arcaneFocus', name:'🔮 奥术专注', desc:'MP恢复+3/秒，技能冷却-5%（被动）', cost:0, type:'passive' },
+];
+
+const MARKET_GOODS = [
+  { name:'药材', emoji:'🌿', price:15, trend:'up', desc:'坠星湖畔特产，白城急需' },
+  { name:'铁器', emoji:'⚔️', price:8, trend:'down', desc:'本地铁匠铺产能过剩' },
+  { name:'丝绸', emoji:'👘', price:25, trend:'stable', desc:'南方运来的高级布料' },
+];
+
+// ══════════════════════════════════════════════════════
+// GAME STATE
+// ══════════════════════════════════════════════════════
+
+let G = {}; // game state
+
+function initState() {
+  G = {
+    scene: 'intro',
+    origin: null,
+    level: 1,
+    xp: 0,
+    nextXP: 100,
+    gold: 50,
+    str:10, agi:10, int:10, cha:10, luk:10,
+    hp:80, maxHP:80,
+    mp:60, maxMP:60,
+    attrPoints: 0,
+    skillPoints: 0,
+    skills: [],
+    originSkill: null,
+    equipment: {},
+    inventory: [],
+    cargo: [],
+    cargoCapacity: 100,
+    npcFavor: {},
+    unlocked: [],
+    combat: null,
+    inBattle: false,
+    pendingAttr: 0,
+    marketVisited: false,
+    taskAccepted: false,
+    firstTradeDone: false,
+  };
+}
+
+// ══════════════════════════════════════════════════════
+// UTILITY
+// ══════════════════════════════════════════════════════
+
+function roll(min, max) { return Math.floor(Math.random()*(max-min+1))+min; }
+function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v));}
+
+function xpForLevel(lv) { return Math.floor(100 * Math.pow(lv, 1.5)); }
+
+function calcMaxHP() {
+  let hp = 80 + G.str * 5;
+  if (G.equipment.铠甲) hp += G.equipment.铠甲.bonusHP||0;
+  return hp;
+}
+function calcMaxMP() {
+  let mp = 60 + G.int * 3;
+  if (G.equipment.头盔) mp += G.equipment.头盔.bonusMP||0;
+  return mp;
+}
+function calcAtk() {
+  let atk = 10 + G.str * 2 + G.int;
+  if (G.equipment.武器) atk += G.equipment.武器.bonusAtk||0;
+  return atk;
+}
+function calcDef() {
+  let def = 5 + G.str;
+  if (G.equipment.铠甲) def += G.equipment.铠甲.bonusDef||0;
+  if (G.equipment.头盔) def += G.equipment.头盔.bonusDef||0;
+  return def;
+}
+function calcCrit() { return 5 + G.luk * 0.5; }
+function calcDodge() { return G.agi * 0.4; }
+function calcTradeDiscount() { return G.cha * 0.3; }
+
+function showToast(msg, cls) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (cls?' '+cls:'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), cls==='levelup'?2500:1800);
+}
+
+function updateStatusBar() {
+  const sb = document.getElementById('statusBar');
+  if (!G.origin) { sb.classList.remove('show'); return; }
+  sb.classList.add('show');
+  G.maxHP = calcMaxHP();
+  G.maxMP = calcMaxMP();
+  document.getElementById('dispLevel').textContent = G.level;
+  document.getElementById('dispGold').textContent = G.gold;
+  document.getElementById('dispHP').textContent = G.hp;
+  document.getElementById('dispMaxHP').textContent = G.maxHP;
+  document.getElementById('dispMP').textContent = G.mp;
+  document.getElementById('dispMaxMP').textContent = G.maxMP;
+  document.getElementById('dispXP').textContent = G.xp;
+  document.getElementById('dispNextXP').textContent = G.nextXP;
+  document.getElementById('dispAttrPts').textContent = G.attrPoints;
+}
+
+function panel(html) { document.getElementById('mainPanel').innerHTML = html; }
+
+// ══════════════════════════════════════════════════════
+// SCENES
+// ══════════════════════════════════════════════════════
+
+function sceneIntro() {
+  panel(`
+  <div class="intro-screen">
+  <h1>⚔️ 龙途：商路与传奇 ⚔️</h1>
+  <p>第一章：起源 · 试玩版</p>
+  <hr class="divider">
+  <div class="scene-text" style="text-align:left">
+  你是谁？从何而来？<br>
+  这五个选择将决定你的起点。<br><br>
+  <em>记住——起点不是终点。</em><br>
+  你的命运，由你的选择铸造。
+  </div>
+  <hr class="divider">
+  <div class="choices">
+    ${ORIGINS.map(o=>`
+    <div class="choice-btn" onclick="selectOrigin('${o.id}')">
+      <span class="label">${o.emoji} ${o.name}</span> — ${o.desc}<br>
+      <span style="color:#7a6a4a;font-size:11px">
+        力量${o.stats.str}敏捷${o.stats.agi}智力${o.stats.int}魅力${o.stats.cha}幸运${o.stats.luk} ·
+        技能「${o.skill.name}」
+      </span>
+    </div>`).join('')}
+  </div>
+  </div>`);
+}
+
+function selectOrigin(id) {
+  const o = ORIGINS.find(x=>x.id===id);
+  G.origin = o;
+  G.str = o.stats.str; G.agi = o.stats.agi; G.int = o.stats.int;
+  G.cha = o.stats.cha; G.luk = o.stats.luk;
+  G.originSkill = o.skill;
+  G.maxHP = calcMaxHP(); G.hp = G.maxHP;
+  G.maxMP = calcMaxMP(); G.mp = G.maxMP;
+  updateStatusBar();
+  showToast(`${o.emoji} 你选择了「${o.name}」`);
+  sceneWakeUp();
+}
+
+function sceneWakeUp() {
+  const o = G.origin;
+  const stories = {
+    mercenary:'战场上尸横遍野，你从死人堆里爬出来。脑海里只有一个念头：活下去。',
+    apprentice:'魔法学院的钟声还在耳边回响。导师说：「你的天赋太危险，离开这里。」然后你就在这片湖畔醒来了。',
+    merchant:'商队遭袭，货物被劫，你破产了。口袋里只剩下几枚金币，和一颗不服输的心。',
+    hunter:'森林深处，你追一头白鹿追了三天三夜。然后它消失了，你来到了这里。',
+    gambler:'赌桌上最后一把，你all in然后赢了。但赢家总是最先被盯上——你不得不跑路。',
+    pilgrim:'神庙被焚毁，你活了下来。护身符还在，但你需要一个新的信仰，一个新的开始。',
+  };
+  panel(`
+  <div class="scene-text">
+  <em>【${o.name} · ${o.desc}】</em><br><br>
+  ${stories[G.origin.id]}
+  </div>
+  <hr class="divider">
+  <div class="scene-text">
+  你站在坠星湖畔，晨雾弥漫。
+  远处传来商队的驼铃声。
+  向东是通往<em>白城</em>的商路。
+  向南是<em>幽暗森林</em>，有冒险者说见过古老的遗迹。
+  向北是<em>破碎堡垒</em>，据守的领主正在招募战士。
+  </div>
+  <hr class="divider">
+  <div class="scene-text" style="background:#2a2a3e;padding:10px;border-radius:6px">
+  【你的状态】<br>
+  ${o.emoji} 起源：${o.name} | 技能：${o.skill.name}<br>
+  ⚔️ 力量${G.str} | 🌿 敏捷${G.agi} | 🧙 智力${G.int}<br>
+  💬 魅力${G.cha} | 🎲 幸运${G.luk}<br>
+  ❤️ HP ${G.hp}/${G.maxHP} | 💧 MP ${G.mp}/${G.maxMP}<br>
+  💰 金币 ${G.gold}
+  </div>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="sceneSetOut()">🚶 向东出发，前往白城</div>
+    <div class="choice-btn" onclick="sceneHesitate()">❓ 在原地整理思绪</div>
+    <div class="choice-btn" onclick="sceneAttributeAlloc()">💪 分配属性点</div>
+  </div>`);
+}
+
+function sceneHesitate() {
+  panel(`
+  <div class="scene-text">
+  你环顾四周。坠星湖畔的芦苇在风中摇曳，水面泛着淡淡的银光。
+  这是一个美丽的地方，但你知道——<br><br>
+  <em>这里不是你的终点。</em>
+  </div>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="sceneSetOut()">🚶 整理好了，出发前往白城</div>
+    <div class="choice-btn" onclick="sceneWakeUp()">↩️ 返回</div>
+  </div>`);
+}
+
+function sceneSetOut() {
+  panel(`
+  <div class="scene-text">
+  你沿着向东的小路前行。晨雾渐渐散去，阳光开始洒落。
+  30分钟后，前方出现一个岔路口。
+  </div>
+  <hr class="divider">
+  <div class="scene-text" style="color:#e55">
+  🗡️ 突然，灌木丛中窜出3只哥布林！<br><br>
+  它们发现了你，发出刺耳的尖叫！
+  </div>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="startBattle(['goblinArcher','goblin2','goblin2'])">⚔️ 迎战！（开始战斗）</div>
+    <div class="choice-btn" onclick="sceneTryFlee()">🏃 尝试逃跑</div>
+  </div>`);
+}
+
+function sceneTryFlee() {
+  const dodge = calcDodge();
+  const fleeChance = 40 + dodge;
+  const roll = Math.random()*100;
+  if (roll < fleeChance) {
+    showToast('🏃 逃跑成功！');
+    sceneOnTheRoad();
+  } else {
+    showToast('❌ 逃跑失败！');
+    startBattle(['goblinArcher','goblin2','goblin2']);
+  }
+}
+
+function sceneOnTheRoad() {
+  const events = [
+    '你沿着小路继续前行。路边的野花开得正盛，蝴蝶在花丛中飞舞。',
+    '一阵风吹来，带来远处炊烟的气息。你知道白城不远了。',
+    '你经过一棵古老的橡树，树干上刻着一些冒险者留下的记号。',
+    '一只野兔从路边窜出，消失在草丛中。这里生态很好。',
+  ];
+  const ev = events[Math.floor(Math.random()*events.length)];
+  panel(`
+  <div class="scene-text">${ev}</div>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="sceneArriveWhiteCity()">🏰 继续前进，白城的轮廓出现在地平线上</div>
+  </div>`);
+}
+
+// ══════════════════════════════════════════════════════
+// COMBAT SYSTEM
+// ══════════════════════════════════════════════════════
+
+function startBattle(enemyIds) {
+  G.combat = {
+    enemies: enemyIds.map((id,i)=>({
+      ...ENEMIES[id],
+      id: id+i,
+      curHp: ENEMIES[id].hp,
+    })),
+    turn: 0,
+    buffRounds: {},
+    log: [],
+    phase: 'player',
+  };
+  G.inBattle = true;
+  updateStatusBar();
+  renderBattle('你发起了攻击！');
+}
+
+function renderBattle(action) {
+  const c = G.combat;
+  const enemiesHtml = c.enemies.map(e=>`
+  <div style="margin:6px 0;padding:8px;background:#2a1a1a;border-radius:6px">
+    <div style="display:flex;justify-content:space-between">
+      <span>${e.emoji} <strong style="color:${e.curHp<=0?'#555':e.isBoss?'#f80':'#e55'}">${e.name}</strong>${e.isBoss?' 👑':''}</span>
+      <span style="color:#e55">${Math.max(0,e.curHp)}/${e.hp}</span>
+    </div>
+    <div class="enemy-hp-bar"><div class="enemy-hp-fill" style="width:${e.curHp<=0?0:Math.max(1,e.curHp/e.hp*100)}%"></div></div>
+    ${e.curHp<=0?'<span style="color:#555;font-size:11px">💀 已击杀</span>':''}
+  </div>`).join('');
+
+  const playerHP = Math.max(0,G.hp);
+  const playerMP = Math.max(0,G.mp);
+  const hpPct = playerHP/G.maxHP*100;
+  const mpPct = playerMP/G.maxMP*100;
+
+  const skillBtns = SKILLS.filter(s=>s.type!=='passive'&&G.skills.includes(s.id)||(G.origin.id==='apprentice'&&s.id==='fireArrow')||(G.origin.id==='apprentice'&&s.id==='heal')||(G.origin.id==='mercenary')||(G.origin.id==='hunter')||(G.origin.id==='gambler')||(G.origin.id==='pilgrim'))
+    .map(s=>`<button class="choice-btn" style="margin:3px 0;font-size:12px" onclick="playerAction('${s.id}')">${s.name} <span style="color:#5af">(${s.cost}MP)</span></button>`).join('');
+
+  const alive = c.enemies.filter(e=>e.curHp>0);
+  const allDead = alive.length===0;
+  const pilgrimHeal = G.origin.id==='pilgrim'&&c.turn===0;
+
+  let headerText = '【战斗开始】';
+  if (action) headerText = action;
+  if (allDead) headerText = '【战斗胜利！】';
+
+  let logHtml = '';
+  if (c.log.length) {
+    logHtml = '<div style="font-size:11px;color:#7a7a9a;margin:6px 0">' +
+      c.log.slice(-3).map(l=>`<div>${l}</div>`).join('') + '</div>';
+  }
+
+  panel(`
+  <div class="scene-text"><em>${headerText}</em></div>
+  ${enemiesHtml}
+  <hr class="divider">
+  <div style="font-size:12px;color:#8a7a5a">【你的状态】</div>
+  <div style="font-size:12px">❤️ HP: <span style="color:${hpPct<30?'#e55':'#5c5'}">${playerHP}/${G.maxHP}</span> | 💧 MP: <span style="color:#5af">${playerMP}/${G.maxMP}</span></div>
+  <div class="player-hp-bar"><div class="player-hp-fill" style="width:${hpPct}%"></div></div>
+  <div class="player-hp-bar"><div class="player-mp-fill" style="width:${mpPct}%"></div></div>
+  ${logHtml}
+  ${allDead?`
+  <hr class="divider">
+  <div class="scene-text">所有敌人被击败！🎉</div>
+  `:`
+  <hr class="divider">
+  <div style="font-size:12px;color:#8a7a5a">请选择行动：</div>
+  ${G.origin.id==='gambler'&&!c.usedGamblerSkill?`<button class="choice-btn" style="margin:3px 0" onclick="gamblerSkill()">🎲 孤注一掷（胜则伤害×2，败则自伤30%）</button>`:''}
+  <button class="choice-btn" onclick="playerAction('attack')">⚔️ 普通攻击</button>
+  <button class="choice-btn" onclick="playerAction('defend')">🛡️ 防御</button>
+  ${G.origin.id==='mercenary'&&!c.usedWarcry?`<button class="choice-btn" onclick="useWarCry()">📢 战吼（攻击+15%持续3回合）</button>`:''}
+  ${skillBtns}
+  <button class="choice-btn" onclick="playerAction('potion')">🎒 使用药水</button>
+  <button class="choice-btn" onclick="tryFlee()">🏃 逃跑</button>
+  `}
+  `);
+}
+
+function useWarCry() {
+  const c = G.combat;
+  c.usedWarcry = true;
+  c.buffRounds.warcry = 3;
+  playerAction('attack');
+}
+
+function gamblerSkill() {
+  const c = G.combat;
+  c.usedGamblerSkill = true;
+  const roll = Math.random();
+  if (roll < G.luk/100+0.3) {
+    showToast('🎲 孤注一掷——胜！伤害翻倍！');
+    c.gamblerDouble = true;
+    playerAction('attack');
+  } else {
+    showToast('🎲 孤注一掷——败！自伤30%！');
+    G.hp = Math.max(1, Math.floor(G.hp*0.7));
+    updateStatusBar();
+    enemyTurn();
+  }
+}
+
+function playerAction(type) {
+  const c = G.combat;
+  const alive = c.enemies.filter(e=>e.curHp>0);
+  if (!alive.length) { endBattle(); return; }
+
+  let log = '';
+  let dmg = 0;
+
+  if (type==='attack') {
+    const target = alive[Math.floor(Math.random()*alive.length)];
+    const baseAtk = calcAtk();
+    const warcryBonus = c.buffRounds.warcry?1.15:1;
+    const gamblerBonus = c.gamblerDouble?2:1;
+    const critRoll = Math.random()*100;
+    const isCrit = critRoll < calcCrit();
+    dmg = Math.floor(roll(baseAtk*0.8, baseAtk*1.2) * warcryBonus * gamblerBonus);
+    if (isCrit) dmg = Math.floor(dmg * 1.5);
+    target.curHp -= dmg;
+    log = `⚔️ 你攻击 ${target.name}，造成 <span class="${isCrit?'crit-text':'damage-text'}">${dmg}${isCrit?' 会心！':''}</span>`;
+    c.gamblerDouble = false;
+  }
+  else if (type==='defend') {
+    c.defending = true;
+    log = '🛡️ 你进入防御姿态！';
+  }
+  else if (type==='fireArrow'||type==='magicMissile') {
+    const sk = SKILLS.find(s=>s.id===type);
+    if (G.mp < sk.cost) { showToast('💧 MP不足！'); renderBattle(); return; }
+    G.mp -= sk.cost;
+    const target = alive[Math.floor(Math.random()*alive.length)];
+    if (type==='magicMissile') {
+      const count = sk.count;
+      let totalDmg = 0;
+      for(let i=0;i<count;i++) totalDmg += roll(sk.dmg[0],sk.dmg[1]);
+      target.curHp -= totalDmg;
+      log = `✨ 魔法飞弹命中 ${target.name}，造成 <span class="magic-text">${totalDmg}</span> 伤害（3枚飞弹）`;
+    } else {
+      dmg = roll(sk.dmg[0],sk.dmg[1]);
+      target.curHp -= dmg;
+      log = `🔥 火焰箭命中 ${target.name}，造成 <span class="magic-text">${dmg}</span> 火焰伤害`;
+    }
+    updateStatusBar();
+  }
+  else if (type==='heal') {
+    const sk = SKILLS.find(s=>s.id==='heal');
+    if (G.mp < sk.cost) { showToast('💧 MP不足！'); renderBattle(); return; }
+    G.mp -= sk.cost;
+    const healAmt = roll(sk.heal[0],sk.heal[1]);
+    G.hp = Math.min(G.maxHP, G.hp + healAmt);
+    log = `💚 你施展治疗术，恢复 <span class="heal-text">${healAmt}</span> HP`;
+    updateStatusBar();
+  }
+  else if (type==='potion') {
+    if (G.inventory.find(i=>i.id==='smallHpPotion')) {
+      G.hp = Math.min(G.maxHP, G.hp+30);
+      G.inventory = G.inventory.filter(i=>i.id!=='smallHpPotion');
+      log = '🎒 你使用了小血瓶，恢复 30 HP';
+      updateStatusBar();
+    } else {
+      showToast('🎒 没有血瓶了！');
+      return;
+    }
+  }
+
+  c.log.push(log);
+  renderBattle(log);
+
+  // Check win
+  const stillAlive = c.enemies.filter(e=>e.curHp>0);
+  if (stillAlive.length===0) {
+    setTimeout(()=>endBattle(),800);
+    return;
+  }
+  // Enemy turn
+  setTimeout(()=>enemyTurn(),600);
+}
+
+function enemyTurn() {
+  const c = G.combat;
+  const alive = c.enemies.filter(e=>e.curHp>0);
+  let logs = [];
+
+  for(const enemy of alive) {
+    let dmg = roll(Math.floor(enemy.atk*0.8), Math.floor(enemy.atk*1.2));
+    const dodgeRoll = Math.random()*100;
+    if (dodgeRoll < calcDodge()) {
+      logs.push(`🌿 ${enemy.name} 的攻击被你闪避！`);
+      continue;
+    }
+    if (c.defending) dmg = Math.floor(dmg*0.5);
+    G.hp = Math.max(0, G.hp-dmg);
+    logs.push(`${enemy.emoji} ${enemy.name} 攻击你，造成 <span class="damage-text">${dmg}</span> 伤害`);
+  }
+
+  if (G.origin.id==='pilgrim' && c.turn===0) {
+    const healAmt = Math.floor(G.maxHP*0.1);
+    G.hp = Math.min(G.maxHP, G.hp+healAmt);
+    logs.push(`🙏 祈祷生效，恢复 <span class="heal-text">${healAmt}</span> HP`);
+  }
+
+  c.turn++;
+  c.defending = false;
+  if (c.buffRounds.warcry) c.buffRounds.warcry--;
+  c.log = c.log.concat(logs);
+  updateStatusBar();
+
+  if (G.hp<=0) {
+    renderBattle(logs.join('<br>'));
+    setTimeout(()=>playerDefeat(),1000);
+    return;
+  }
+  renderBattle(logs.join('<br>'));
+}
+
+function tryFlee() {
+  const chance = 25 + calcDodge();
+  if (Math.random()*100 < chance) {
+    showToast('🏃 逃跑成功！');
+    G.inBattle = false;
+    G.combat = null;
+    sceneOnTheRoad();
+  } else {
+    showToast('❌ 逃跑失败！');
+    enemyTurn();
+  }
+}
+
+function endBattle() {
+  G.inBattle = false;
+  const c = G.combat;
+  let xpGain = c.enemies.reduce((s,e)=>s+e.xp,0);
+  let goldGain = c.enemies.reduce((s,e)=>s+roll(e.gold[0],e.gold[1]),0);
+
+  G.xp += xpGain;
+  G.gold += goldGain;
+
+  // Drop item
+  const dropChance = 0.3;
+  let dropHtml = '';
+  if (Math.random()<dropChance) {
+    const drops = [
+      { name:'哥布林短剑', rarity:'fine', type:'weapon', bonusAtk:15, stats:{str:3} },
+      { name:'哥布林皮甲', rarity:'common', type:'armor', bonusDef:8, stats:{hp:20} },
+    ];
+    const item = drops[Math.floor(Math.random()*drops.length)];
+    G.inventory.push(item);
+    const cls = 'rarity-'+item.rarity;
+    dropHtml = `<br>📦 掉落：<span class="${cls}">${item.name}</span>`;
+  }
+
+  // Pilgrim heal
+  if (G.origin.id==='pilgrim') {
+    const healAmt = Math.floor(G.maxHP*0.1);
+    G.hp = Math.min(G.maxHP, G.hp+healAmt);
+  }
+
+  // Check level up
+  let levelUpHtml = '';
+  if (G.xp >= G.nextXP) {
+    levelUp();
+    G.attrPoints += 3;
+    G.skillPoints += 1;
+    levelUpHtml = `<br><br>⬆️ <span style="color:#f0c040">升级！等级 ${G.level-1} → ${G.level}</span><br>获得 3 属性点、1 技能点！`;
+    showToast(`⬆️ 升级！等级 ${G.level}`, 'levelup');
+  }
+
+  G.combat = null;
+  updateStatusBar();
+
+  const storyEvent = c.enemies[0].isBoss ? 'sceneBossVictory' : 'sceneAfterFirstBattle';
+  if (G.scene!=='afterFirstBattle') {
+    G.scene = 'afterFirstBattle';
+    panel(`
+    <div class="scene-text">
+    【战斗胜利！】🎉<br><br>
+    获得经验：<span style="color:#5f5">⭐ ${xpGain} XP</span><br>
+    获得金币：<span style="color:#f0c040">💰 ${goldGain}</span>${dropHtml}
+    ${levelUpHtml}
+    </div>
+    <hr class="divider">
+    <div class="choices">
+      <div class="choice-btn" onclick="sceneArriveWhiteCity()">🏰 继续前进，白城就在眼前</div>
+      ${G.attrPoints>0?`<div class="choice-btn" onclick="sceneAttributeAlloc()">💪 分配属性点（${G.attrPoints}点可用）</div>`:''}
+      ${G.skillPoints>0?`<div class="choice-btn" onclick="sceneSkillLearn()">📖 学习新技能（${G.skillPoints}点可用）</div>`:''}
+    </div>`);
+  } else {
+    sceneArriveWhiteCity();
+  }
+}
+
+function levelUp() {
+  G.level++;
+  G.xp -= G.nextXP;
+  G.nextXP = xpForLevel(G.level);
+  G.maxHP = calcMaxHP();
+  G.maxMP = calcMaxMP();
+  G.hp = G.maxHP;
+  G.mp = G.maxMP;
+}
+
+function playerDefeat() {
+  panel(`
+  <div class="scene-text" style="text-align:center">
+  💀 你倒下了...<br><br>
+  但冒险者不会轻易放弃。<br>
+  你在坠星湖畔重新醒来，身上还带着伤。
+  </div>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="G.hp=Math.floor(G.maxHP*0.5);G.mp=Math.floor(G.maxMP*0.5);updateStatusBar();sceneWakeUp()">💪 恢复50%HP，重新开始（不损失进度）</div>
+  </div>`);
+}
+
+// ══════════════════════════════════════════════════════
+// ATTRIBUTE ALLOCATION
+// ══════════════════════════════════════════════════════
+
+let attrDraft = {};
+let attrSaved = {};
+
+function sceneAttributeAlloc() {
+  if (!attrDraft.init) {
+    attrDraft = { str:G.str, agi:G.agi, int:G.int, cha:G.cha, luk:G.luk };
+    attrSaved.pts = G.attrPoints;
+  }
+  const pts = attrSaved.pts - (attrDraft.str+attrDraft.agi+attrDraft.int+attrDraft.cha+attrDraft.luk - G.str-G.agi-G.int-G.cha-G.luk);
+  const rows = [
+    {key:'str', name:'⚔️ 力量', hint:'+2物攻/+2负重', val:attrDraft.str},
+    {key:'agi', name:'🌿 敏捷', hint:'+闪避/+攻速', val:attrDraft.agi},
+    {key:'int', name:'🧙 智力', hint:'+2魔攻/+3MP', val:attrDraft.int},
+    {key:'cha', name:'💬 魅力', hint:'+商店折扣/+NPC好感', val:attrDraft.cha},
+    {key:'luk', name:'🎲 幸运', hint:'+会心/+掉落/+赌博', val:attrDraft.luk},
+  ];
+  panel(`
+  <div class="scene-text"><em>【属性分配】</em></div>
+  <div class="points-left">剩余点数：<strong style="font-size:18px">${pts}</strong></div>
+  ${rows.map(r=>`
+  <div class="attr-row">
+    <span class="attr-name">${r.name}</span>
+    <span class="attr-value" style="color:#f0c040">${r.val}</span>
+    <span class="attr-hint">${r.hint}</span>
+    <div class="attr-btns">
+      <button class="attr-btn" onclick="attrAdjust('${r.key}',-1)" ${r.val<=r.key==='str'?G.str:r.key==='agi'?G.agi:r.key==='int'?G.int:r.key==='cha'?G.cha:G.luk?'-':G.luk:'disabled'}>−</button>
+      <button class="attr-btn" onclick="attrAdjust('${r.key}',1)" ${pts<=0?'disabled':''}>+</button>
+    </div>
+  </div>`).join('')}
+  <hr class="divider">
+  <div style="font-size:11px;color:#7a6a4a;text-align:center">提示：50级时单属性上限60，升级点不足以全堆一属性</div>
+  <button class="confirm-btn" onclick="confirmAttr()" ${pts>0?'disabled':''}>确认分配</button>
+  <button class="confirm-btn" onclick="sceneAttributeAllocReset()" style="background:#444;color:#aaa;margin-top:6px">重置</button>
+  `);
+}
+
+function attrAdjust(key, delta) {
+  const base = key==='str'?G.str:key==='agi'?G.agi:key==='int'?G.int:key==='cha'?G.cha:G.luk;
+  const current = attrDraft[key];
+  const pts = attrSaved.pts - (attrDraft.str+attrDraft.agi+attrDraft.int+attrDraft.cha+attrDraft.luk - G.str-G.agi-G.int-G.cha-G.luk);
+  if (delta>0 && pts<=0) return;
+  if (delta<0 && current<=base) return;
+  attrDraft[key] += delta;
+  sceneAttributeAlloc();
+}
+
+function sceneAttributeAllocReset() {
+  delete attrDraft.init;
+  G.attrPoints += (attrDraft.str+attrDraft.agi+attrDraft.int+attrDraft.cha+attrDraft.luk - G.str-G.agi-G.int-G.cha-G.luk);
+  attrDraft = { str:G.str, agi:G.agi, int:G.int, cha:G.cha, luk:G.luk };
+  attrSaved.pts = G.attrPoints;
+  sceneAttributeAlloc();
+}
+
+function confirmAttr() {
+  G.str=attrDraft.str; G.agi=attrDraft.agi; G.int=attrDraft.int; G.cha=attrDraft.cha; G.luk=attrDraft.luk;
+  G.maxHP=calcMaxHP(); G.hp=Math.min(G.hp,G.maxHP);
+  G.maxMP=calcMaxMP(); G.mp=Math.min(G.mp,G.maxMP);
+  G.attrPoints = 0;
+  updateStatusBar();
+  showToast('✅ 属性分配完成！');
+  sceneArriveWhiteCity();
+}
+
+// ══════════════════════════════════════════════════════
+// SKILL LEARNING
+// ══════════════════════════════════════════════════════
+
+function sceneSkillLearn() {
+  if (!G.skills.length) G.skills = [];
+  const available = SKILLS.filter(s=>!G.skills.includes(s.id));
+  panel(`
+  <div class="scene-text"><em>【技能学习】技能点：${G.skillPoints}</em></div>
+  <div class="scene-text">从以下技能中选择一个学习：</div>
+  ${available.map(s=>`
+  <div class="skill-card" onclick="learnSkill('${s.id}')">
+    <div class="skill-name">${s.name}</div>
+    <div class="skill-desc">${s.desc}</div>
+    ${s.cost>0?`<div class="skill-cost">💧 消耗：${s.cost} MP</div>`:''}
+  </div>`).join('')}
+  <button class="confirm-btn" onclick="sceneArriveWhiteCity()" style="background:#444;color:#aaa;margin-top:10px">暂时不学</button>
+  `);
+}
+
+function learnSkill(id) {
+  if (G.skillPoints<=0) return;
+  G.skills.push(id);
+  G.skillPoints--;
+  const sk = SKILLS.find(s=>s.id===id);
+  showToast(`✅ 习得「${sk.name}」！`);
+  updateStatusBar();
+  if (G.skillPoints>0) sceneSkillLearn();
+  else sceneArriveWhiteCity();
+}
+
+// ══════════════════════════════════════════════════════
+// WHITE CITY
+// ══════════════════════════════════════════════════════
+
+function sceneArriveWhiteCity() {
+  G.scene = 'whiteCity';
+  panel(`
+  <div class="scene-text">
+  🏰 【白城·南门】<br><br>
+  你站在白城门前。城墙高耸，商队进进出出，
+  空气中弥漫着烤面包和铁匠铺的气息。
+  </div>
+  <hr class="divider">
+  <div class="scene-text" style="background:#2a2a3e;padding:10px;border-radius:6px;font-size:13px">
+  【${G.origin.emoji} ${G.origin.name}】等级 ${G.level} | 💰 ${G.gold}金币<br>
+  ❤️ ${G.hp}/${G.maxHP} HP | 💧 ${G.mp}/${G.maxMP} MP<br>
+  ⚔️ ${G.str} | 🌿 ${G.agi} | 🧙 ${G.int} | 💬 ${G.cha} | 🎲 ${G.luk}
+  </div>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="sceneMarket()">🏪 市场 — 买卖货物</div>
+    <div class="choice-btn" onclick="sceneBlacksmith()">⚒️ 铁匠铺 — 修理/购买装备</div>
+    <div class="choice-btn" onclick="sceneGuild()">📜 冒险者公会 — 接取任务</div>
+    <div class="choice-btn" onclick="sceneInn()">🍺 旅店 — 休息 & 接支线</div>
+    <div class="choice-btn" onclick="sceneAttributeAlloc()">💪 分配属性点 ${G.attrPoints>0?`<span style="color:#f0c040">(${G.attrPoints}点)</span>`:''}</div>
+    <div class="choice-btn" onclick="sceneSkillLearn()">📖 学习技能 ${G.skillPoints>0?`<span style="color:#f0c040">(${G.skillPoints}点)</span>`:''}</div>
+    <div class="choice-btn" onclick="sceneInventory()">🎒 背包/装备</div>
+  </div>`);
+}
+
+// ══════════════════════════════════════════════════════
+// MARKET
+// ══════════════════════════════════════════════════════
+
+function sceneMarket() {
+  const discount = G.origin.id==='merchant'&&!G.marketVisited ? 0.8 : 1;
+  if (!G.marketVisited) G.marketVisited = true;
+  panel(`
+  <div class="scene-text"><em>【白城市场】</em> 你的金币：<strong style="color:#f0c040">💰 ${G.gold}</strong></div>
+  ${G.origin.id==='merchant'&&!G.firstTradeDone?`<div style="font-size:11px;color:#5f5;margin-bottom:6px">✨ 行商技能「讨价还价」生效！首笔交易8折！</div>`:''}
+  <hr class="divider">
+  ${MARKET_GOODS.map(g=>{
+    const price = Math.floor(g.price * discount);
+    const trendCls = g.trend==='up'?'trend-up':g.trend==='down'?'trend-down':'trend-stable';
+    const trendTxt = g.trend==='up'?'📈 高价':g.trend==='down'?'📉 低价':'📊 稳定';
+    return `
+  <div class="market-item">
+    <div>
+      <span class="market-name">${g.emoji} ${g.name}</span>
+      <div style="font-size:11px;color:#7a6a4a">${g.desc}</div>
+    </div>
+    <div style="text-align:right">
+      <div class="market-price">💰 <strong>${price}</strong> 金/单位</div>
+      <div class="market-trend ${trendCls}">${trendTxt}</div>
+      <div style="margin-top:4px">
+        <button class="choice-btn" style="padding:4px 8px;font-size:11px;display:inline" onclick="buyGoods('${g.name}',${price},1)">+1</button>
+        <button class="choice-btn" style="padding:4px 8px;font-size:11px;display:inline" onclick="buyGoods('${g.name}',${price},10)">+10</button>
+      </div>
+    </div>
+  </div>`;}).join('')}
+  <hr class="divider">
+  <div class="scene-text" style="font-size:12px">
+  📦 货舱：${G.cargo.reduce((s,i)=>s+i.qty,0)}/${G.cargoCapacity} 单位<br>
+  ${G.cargo.length?G.cargo.map(c=>`· ${c.name} ×${c.qty}`).join('<br>'):'<span style="color:#7a6a4a">（空）</span>'}
+  </div>
+  <hr class="divider">
+  <div style="font-size:12px;color:#8a7a5a;margin-bottom:8px">📍 可贩卖地点：</div>
+  <div class="choices">
+    <div class="choice-btn" onclick="sellGoods('xingsuo')">🌿 坠星湖畔 — 药材高价求购！</div>
+    <div class="choice-btn" onclick="sellGoods('darkforest')">🌲 幽暗森林 — 铁器短缺！</div>
+    <div class="choice-btn" onclick="sceneArriveWhiteCity()">↩️ 返回城镇</div>
+  </div>`);
+}
+
+function buyGoods(name, price, qty) {
+  const cost = price * qty;
+  if (G.gold < cost) { showToast('💰 金币不足！'); return; }
+  if (G.cargo.reduce((s,i)=>s+i.qty,0) + qty > G.cargoCapacity) {
+    showToast('📦 货舱已满！'); return;
+  }
+  G.gold -= cost;
+  const existing = G.cargo.find(c=>c.name===name);
+  if (existing) existing.qty += qty;
+  else G.cargo.push({ name, qty, price });
+  updateStatusBar();
+  showToast(`✅ 购买了 ${qty} 单位${name}，花费 ${cost} 金`);
+  sceneMarket();
+}
+
+function sellGoods(dest) {
+  if (!G.cargo.length) { showToast('📦 货舱是空的！'); return; }
+  let profit = 0;
+  const destInfo = {
+    xingsuo:{ name:'坠星湖畔', bonus:{'药材':2.0,'铁器':0.9,'丝绸':1.0} },
+    darkforest:{ name:'幽暗森林', bonus:{'药材':1.2,'铁器':1.5,'丝绸':1.1} },
+  };
+  const info = destInfo[dest];
+  const details = G.cargo.map(c=>{
+    const mult = info.bonus[c.name]||1;
+    const sellPrice = Math.floor(c.price * mult);
+    const p = sellPrice * c.qty;
+    profit += p;
+    return `${c.name} ×${c.qty} → ${sellPrice}金/单位 = ${p}金`;
+  });
+  G.firstTradeDone = true;
+  G.gold += profit;
+  G.cargo = [];
+  updateStatusBar();
+  showToast(`💰 商贸完成！利润 ${profit} 金！`);
+  panel(`
+  <div class="scene-text"><em>【商贸结算】前往 ${info.name}</em></div>
+  <div class="scene-text" style="font-size:12px">${details.join('<br>')}</div>
+  <hr class="divider">
+  <div style="text-align:center;font-size:18px;color:#f0c040">💰 获得 ${profit} 金币！</div>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="sceneArriveWhiteCity()">↩️ 返回白城</div>
+  </div>`);
+}
+
+// ══════════════════════════════════════════════════════
+// BLACKSMITH
+// ══════════════════════════════════════════════════════
+
+const SHOP_ITEMS = [
+  { name:'精钢长剑', slot:'weapon', rarity:'fine', price:180, bonusAtk:25, stats:{str:5,agi:2}, desc:'比铁剑锋利多了' },
+  { name:'皮胸甲', slot:'armor', rarity:'fine', price:150, bonusDef:20, stats:{hp:50}, desc:'提供不错的防护' },
+  { name:'生命戒指', slot:'accessory', rarity:'rare', price:300, stats:{hp:80,luk:3}, desc:'增加生命上限' },
+  { name:'法师长袍', slot:'armor', rarity:'rare', price:280, bonusDef:15, stats:{int:8,mp:40}, desc:'智力加成很高' },
+];
+
+function sceneBlacksmith() {
+  panel(`
+  <div class="scene-text"><em>【铁匠铺】</em> 金币：<strong style="color:#f0c040">💰 ${G.gold}</strong></div>
+  <div class="scene-text" style="font-size:12px;color:#8a7a5a">
+  铁匠是个大胡子矮人，正挥舞着铁锤叮叮当当地敲打。
+  看到你进来，他抬起头：「想看点好东西？我这儿可是白城最好的货！」
+  </div>
+  <hr class="divider">
+  ${SHOP_ITEMS.map(item=>{
+    const cls = 'rarity-'+item.rarity;
+    const canAfford = G.gold >= item.price;
+    return `
+  <div class="skill-card" style="${!canAfford?'opacity:0.5':''}">
+    <div class="skill-name ${cls}">${item.name}</div>
+    <div style="font-size:11px;color:#7a6a4a">${item.desc}</div>
+    <div style="font-size:11px;margin:3px 0">
+      ${item.bonusAtk?`⚔️ 攻击+${item.bonusAtk}`:''}
+      ${item.bonusDef?`🛡️ 防御+${item.bonusDef}`:''}
+      ${item.stats.str?`⚔️ 力量+${item.stats.str}`:''}
+      ${item.stats.agi?`🌿 敏捷+${item.stats.agi}`:''}
+      ${item.stats.int?`🧙 智力+${item.stats.int}`:''}
+      ${item.stats.hp?`❤️ HP+${item.stats.hp}`:''}
+      ${item.stats.mp?`💧 MP+${item.stats.mp}`:''}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+      <span style="color:#f0c040">💰 ${item.price} 金</span>
+      <button class="choice-btn" style="padding:4px 10px;font-size:11px" onclick="buyItem('${item.name}')" ${!canAfford?'disabled':''}>
+        ${canAfford?'购买':'金币不足'}
+      </button>
+    </div>
+  </div>`;}).join('')}
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="sceneArriveWhiteCity()">↩️ 返回</div>
+  </div>`);
+}
+
+function buyItem(name) {
+  const item = SHOP_ITEMS.find(i=>i.name===name);
+  if (!item) return;
+  if (G.gold < item.price) { showToast('💰 金币不足！'); return; }
+  G.gold -= item.price;
+  G.inventory.push({...item, id:'item_'+Date.now()});
+  updateStatusBar();
+  showToast(`✅ 购买了「${name}」！`);
+  sceneBlacksmith();
+}
+
+// ══════════════════════════════════════════════════════
+// GUILD
+// ══════════════════════════════════════════════════════
+
+function sceneGuild() {
+  const tasks = [
+    { name:'寻找失踪商队', desc:'前往坠星湖畔搜索，可能遭遇伏击', reward:'150 XP + 80金', battle:true },
+    { name:'采集月光草', desc:'在白城附近草丛采集，无战斗但有路线', reward:'120 XP + 50金', battle:false },
+    { name:'护送商队', desc:'保护商队安全到达幽暗森林', reward:'200 XP + 120金', battle:true },
+  ];
+  panel(`
+  <div class="scene-text"><em>【冒险者公会】</em></div>
+  <div class="scene-text" style="font-size:12px;color:#8a7a5a">
+  公会大厅里人声鼎沸。接待员——一位精灵女性——看了你一眼：
+  「新人？先接个任务练练手吧。」
+  </div>
+  <hr class="divider">
+  ${tasks.map((t,i)=>`
+  <div class="skill-card" onclick="acceptTask(${i})">
+    <div class="skill-name">📜 ${t.name}</div>
+    <div class="skill-desc">${t.desc}</div>
+    <div style="font-size:11px;color:#5f5;margin-top:4px">奖励：${t.reward}</div>
+  </div>`).join('')}
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="sceneArriveWhiteCity()">↩️ 暂时不接任务</div>
+  </div>`);
+}
+
+function acceptTask(idx) {
+  G.taskAccepted = true;
+  const tasks = ['寻找失踪商队','采集月光草','护送商队'];
+  showToast(`✅ 接受了任务「${tasks[idx]}」！`);
+  panel(`
+  <div class="scene-text"><em>【任务接取成功】</em></div>
+  <div class="scene-text">
+  📜 任务：${tasks[idx]}<br>
+  目标：前往相关地点完成任务<br>
+  提示：这个任务将带你体验完整的第一章流程！
+  </div>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="sceneBossEncounter()">⚔️ 开始任务（进入第一章Boss战）</div>
+    <div class="choice-btn" onclick="sceneArriveWhiteCity()">↩️ 返回白城准备一下</div>
+  </div>`);
+}
+
+// ══════════════════════════════════════════════════════
+// BOSS ENCOUNTER
+// ══════════════════════════════════════════════════════
+
+function sceneBossEncounter() {
+  panel(`
+  <div class="scene-text">
+  🗺️ 【坠星湖畔·商队遗迹】<br><br>
+  你找到了商队的残骸。货物散落一地，但人不见了。
+  地上有一串脚印，通向湖畔的一个山洞。
+  </div>
+  <hr class="divider">
+  <div class="scene-text">
+  你进入山洞。洞穴深处，符文在发光...
+  一个身影转过身——
+  </div>
+  <hr class="divider">
+  <div class="scene-text" style="color:#e55;font-size:15px;text-align:center">
+  💀 <strong>黑暗学徒</strong> 出现在你面前！<br>
+  <span style="font-size:12px;color:#8a7a5a">「又来了一个送死的...你不认识我了吗？」</span><br>
+  <span style="font-size:12px;color:#f80">lv.5 Boss | HP 180 | 技能：暗影箭、召唤哥布林</span>
+  </div>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="startBossBattle()">⚔️ 迎战！（Boss战）</div>
+  </div>`);
+}
+
+function startBossBattle() {
+  startBattle(['darkApprentice','goblin2','goblin2']);
+}
+
+function sceneBossVictory() {
+  panel(`
+  <div class="chapter-end">
+  <h2>🏆 第一章完结</h2>
+  <p>击败黑暗学徒后，他留下最后一句话：</p>
+  <p style="color:#e55;font-style:italic">「你以为这是结束？学院里还有更多人想杀你...找到守望者...」</p>
+  <hr class="divider">
+  <p>你解救了商队成员。白城商会将永远铭记你的恩情。</p>
+  <hr class="divider">
+  <p style="color:#f0c040">📊 第一章结算</p>
+  <p>等级：5 | 金币：约 350 | 解锁系统：全核心系统</p>
+  <p>已获得技能：火焰箭 | 治疗术</p>
+  <p>NPC好感度：商队首领（熟悉）</p>
+  <hr class="divider">
+  <p style="color:#8a7a5a">第二章：白城阴谋（开发中...）</p>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="initState();sceneIntro()">🔄 重新开始，体验不同起源</div>
+    <div class="choice-btn" onclick="sceneArriveWhiteCity()">🔙 自由探索白城</div>
+  </div>
+  </div>`);
+}
+
+// ══════════════════════════════════════════════════════
+// INVENTORY
+// ══════════════════════════════════════════════════════
+
+function sceneInventory() {
+  const eq = G.equipment;
+  panel(`
+  <div class="scene-text"><em>【背包 & 装备】</em></div>
+  <div style="font-size:12px;color:#8a7a5a;margin-bottom:8px">已装备：</div>
+  ${['weapon','armor','helmet','boots','glove','belt','accessory'].map(slot=>{
+    const names = {weapon:'武器',armor:'铠甲',helmet:'头盔',boots:'靴子',glove:'手套',belt:'腰带',accessory:'饰品'};
+    const e = eq[slot];
+    return `
+  <div class="inv-item">
+    <span class="inv-slot">${names[slot]}：</span>
+    <span>${e?`<span class="rarity-${e.rarity||'common'}">${e.name}</span>`:'<span style="color:#555">(空)</span>'}</span>
+    ${e?`<button style="font-size:10px;padding:2px 6px;background:#444;border:1px solid #666;border-radius:3px;color:#aaa;cursor:pointer" onclick="unequip('${slot}')">卸下</button>`:''}
+  </div>`;}).join('')}
+  <hr class="divider">
+  <div style="font-size:12px;color:#8a7a5a;margin-bottom:8px">背包（${G.inventory.length}件）：</div>
+  ${G.inventory.length?G.inventory.map(item=>`
+  <div class="inv-item">
+    <span class="inv-name"><span class="rarity-${item.rarity||'common'}">${item.name}</span></span>
+    <div>
+      ${item.bonusAtk?`⚔️+${item.bonusAtk}`:''}
+      ${item.bonusDef?`🛡️+${item.bonusDef}`:''}
+      ${item.bonusHP?`❤️+${item.bonusHP}`:''}
+      ${item.bonusMP?`💧+${item.bonusMP}`:''}
+      ${item.stats?Object.entries(item.stats).map(([k,v])=>`${k}+${v}`).join(' '):''}
+    </div>
+    <button style="font-size:10px;padding:2px 6px;background:#5a5a3a;border:1px solid #8a8a4a;border-radius:3px;color:#f0c040;cursor:pointer" onclick="equipItem('${item.name}')">装备</button>
+  </div>`).join(''):'<div style="color:#555;font-size:12px">背包空空如也</div>'}
+  <hr class="divider">
+  <div class="scene-text" style="font-size:12px">💰 金币：${G.gold}</div>
+  <button class="confirm-btn" onclick="sceneArriveWhiteCity()" style="background:#444;color:#aaa">返回</button>
+  `);
+}
+
+function equipItem(name) {
+  const item = G.inventory.find(i=>i.name===name);
+  if (!item) return;
+  const slot = item.slot||'weapon';
+  if (G.equipment[slot]) {
+    G.inventory.push(G.equipment[slot]);
+  }
+  G.equipment[slot] = item;
+  G.inventory = G.inventory.filter(i=>i.name!==name);
+  G.maxHP=calcMaxHP();G.maxMP=calcMaxMP();
+  G.hp=Math.min(G.hp,G.maxHP);G.mp=Math.min(G.mp,G.maxMP);
+  updateStatusBar();
+  showToast(`✅ 装备了「${name}」！`);
+  sceneInventory();
+}
+
+function unequip(slot) {
+  const item = G.equipment[slot];
+  if (!item) return;
+  G.inventory.push(item);
+  delete G.equipment[slot];
+  G.maxHP=calcMaxHP();G.maxMP=calcMaxMP();
+  G.hp=Math.min(G.hp,G.maxHP);G.mp=Math.min(G.mp,G.maxMP);
+  updateStatusBar();
+  showToast(`📦 卸下了「${item.name}」`);
+  sceneInventory();
+}
+
+// ══════════════════════════════════════════════════════
+// INN
+// ══════════════════════════════════════════════════════
+
+function sceneInn() {
+  panel(`
+  <div class="scene-text"><em>【旅店】</em></div>
+  <div class="scene-text" style="font-size:12px;color:#8a7a5a">
+  旅店老板是个胖胖的中年妇女，脸上总是挂着笑容。
+  「冒险者？住一晚只要10金币，保证你睡得香！」
+  </div>
+  <hr class="divider">
+  <div class="scene-text">
+  ❤️ 当前 HP：${G.hp}/${G.maxHP} | 💧 MP：${G.mp}/${G.maxMP}
+  </div>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="restAtInn()">🛏️ 住宿休息（10金币）— 完全恢复 HP/MP</div>
+    <div class="choice-btn" onclick="sceneArriveWhiteCity()">↩️ 返回</div>
+  </div>`);
+}
+
+function restAtInn() {
+  if (G.gold<10) { showToast('💰 金币不足！'); return; }
+  G.gold -= 10;
+  G.hp = G.maxHP;
+  G.mp = G.maxMP;
+  updateStatusBar();
+  showToast('😴 休息完毕！HP/MP完全恢复！');
+  panel(`
+  <div class="scene-text">
+  🛏️ 你睡了一个好觉。<br>
+  第二天醒来，精神焕发！
+  </div>
+  <div class="scene-text">
+  ❤️ HP：${G.hp}/${G.maxHP}<br>
+  💧 MP：${G.mp}/${G.maxMP}
+  </div>
+  <hr class="divider">
+  <div class="choices">
+    <div class="choice-btn" onclick="sceneArriveWhiteCity()">↩️ 离开旅店</div>
+  </div>`);
+}
+
+// ══════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════
+
+initState();
+sceneIntro();
+</script>
+</body>
+</html>

@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>龙途：商路与传奇 — 试玩版</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    color: #e8d5b7;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    min-height: 100vh;
+    padding: 12px;
+  }
+  .container { max-width: 480px; margin: 0 auto; }
+
+  .game-title {
+    text-align: center;
+    font-size: 22px;
+    color: #f0c040;
+    padding: 12px 0 6px;
+    text-shadow: 0 0 20px rgba(240,192,64,0.5);
+    letter-spacing: 2px;
+  }
+  .game-subtitle {
+    text-align: center;
+    color: #8a7a5a;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .status-bar {
+    background: #2a2a3e;
+    border: 1px solid #4a4a6a;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    display: none;
+  }
+  .status-bar.show { display: block; }
+  .status-row { display: flex; justify-content: space-between; margin: 3px 0; }
+  .stat-hp { color: #e55; }
+  .stat-mp { color: #5af; }
+  .stat-gold { color: #f0c040; }
+  .stat-xp { color: #5f5; }
+
+  .panel {
+    background: #1e1e32;
+    border: 1px solid #3a3a5a;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 8px;
+    min-height: 280px;
+    max-height: 450px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .panel::-webkit-scrollbar { width: 4px; }
+  .panel::-webkit-scrollbar-track { background: #2a2a3e; }
+  .panel::-webkit-scrollbar-thumb { background: #5a5a8a; border-radius: 2px; }
+
+  .scene-text { color: #c8b890; margin-bottom: 10px; }
+  .scene-text em { color: #f0c040; font-style: normal; }
+
+  .divider { border: none; border-top: 1px solid #3a3a5a; margin: 8px 0; }
+
+  .choices { display: flex; flex-direction: column; gap: 6px; }
+  .choice-btn {
+    background: #2a2a3e;
+    border: 1px solid #5a5a8a;
+    border-radius: 6px;
+    color: #e8d5b7;
+    padding: 9px 12px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+    line-height: 1.6;
+  }
+  .choice-btn:hover {
+    background: #3a3a5e;
+    border-color: #f0c040;
+    color: #f0c040;
+  }
+  .choice-btn:active { transform: scale(0.98); }
+  .choice-btn .label { color: #f0c040; font-weight: bold; margin-right: 4px; }
+
+  .hp-bar {
+    background: #3a1a1a;
+    border: 1px solid #8a3a3a;
+    border-radius: 4px;
+    height: 18px;
+    margin: 4px 0 8px;
+    overflow: hidden;
+  }
+  .hp-fill {
+    background: linear-gradient(90deg, #e55, #c33);
+    height: 100%;
+    transition: width 0.3s;
+  }
+
+  .mp-bar {
+    background: #1a2a3a;
+    border: 1px solid #3a5a8a;
+    border-radius: 4px;
+    height: 12px;
+    margin: 3px 0;
+    overflow: hidden;
+  }
+  .mp-fill {
+    background: linear-gradient(90deg, #5af, #38c);
+    height: 100%;
+    transition: width 0.3s;
+  }
+
+  .attr-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #2a2a3e;
+  }
+  .attr-name { color: #c8b890; width: 100px; }
+  .attr-value { color: #f0c040; width: 30px; text-align: center; }
+  .attr-btns { display: flex; gap: 8px; }
+  .attr-btn {
+    width: 28px; height: 28px;
+    border: 1px solid #5a5a8a;
+    border-radius: 4px;
+    background: #2a2a3e;
+    color: #e8d5b7;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .attr-btn:hover { background: #3a3a5e; }
+  .attr-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .attr-hint { color: #7a6a4a; font-size: 11px; }
+  .points-left { text-align: center; color: #f0c040; font-size: 14px; margin: 8px 0; }
+
+  .skill-card {
+    background: #2a2a3e;
+    border: 1px solid #4a4a6a;
+    border-radius: 6px;
+    padding: 10px;
+    margin: 6px 0;
+    cursor: pointer;
+  }
+  .skill-card:hover { border-color: #f0c040; background: #3a3a5e; }
+  .skill-name { color: #f0c040; font-weight: bold; }
+  .skill-desc { color: #9a9aba; font-size: 12px; margin-top: 3px; }
+
+  .market-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #2a2a3e;
+  }
+  .trend-up { color: #e55; }
+  .trend-down { color: #5c5; }
+  .trend-stable { color: #888; }
+
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f0c040;
+    color: #1a1a2e;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+  .toast.levelup {
+    background: linear-gradient(135deg, #f0c040, #ff6b6b);
+    font-size: 15px;
+  }
+
+  .confirm-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, #f0c040, #e0a030);
+    border: none;
+    border-radius: 6px;
+    color: #1a1a2e;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .confirm-btn:hover { filter: brightness(1.1); }
+  .confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .chapter-end { text-align: center; padding: 20px; }
+  .chapter-end h2 { color: #f0c040; font-size: 18px; margin-bottom: 10px; }
+
+  .rarity-fine { color: #5f5; }
+  .rarity-rare { color: #5af; }
+  .rarity-epic { color: #a5a; }
+  .rarity-legendary { color: #f80; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="game-title">龙途：商路与传奇</div>
+<div class="game-subtitle">第一章：起源 · 试玩版</div>
+
+<div class="status-bar" id="statusBar">
+  <div class="status-row">
+    <span>等级 <em id="dispLevel">1</em></span>
+    <span class="stat-gold">金币 <em id="dispGold">50</em></span>
+  </div>
+  <div class="status-row">
+    <span class="stat-hp">HP <em id="dispHP">80</em>/<em id="dispMaxHP">80</em></span>
+    <span class="stat-mp">MP <em id="dispMP">60</em>/<em id="dispMaxMP">60</em></span>
+  </div>
+</div>
+
+<div class="panel" id="mainPanel"></div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════
+
+const ORIGINS = [
+  { id:'mercenary', name:'佣兵', emoji:'⚔️', desc:'战场幸存者', str:14, agi:12, int:8, cha:8, luk:8, skill:'战吼', skillDesc:'攻击+15%持续3回合', weapon:'铁剑', armor:'皮甲' },
+  { id:'apprentice', name:'学徒', emoji:'🎓', desc:'魔法学院逃亡者', str:8, agi:8, int:14, cha:10, luk:10, skill:'奥术感知', skillDesc:'可侦测魔法陷阱', weapon:'法杖', armor:'学徒袍' },
+  { id:'merchant', name:'行商', emoji:'🛣️', desc:'破产商人', str:8, agi:10, int:10, cha:14, luk:8, skill:'讨价还价', skillDesc:'首笔交易8折', weapon:'短刀', armor:'大衣' },
+  { id:'hunter', name:'猎人', emoji:'🌿', desc:'森林猎人', str:10, agi:14, int:8, cha:8, luk:10, skill:'陷阱感知', skillDesc:'可见陷阱位置', weapon:'猎弓', armor:'皮靴' },
+  { id:'gambler', name:'赌徒', emoji:'🎲', desc:'赌桌幸运儿', str:8, agi:10, int:10, cha:8, luk:14, skill:'孤注一掷', skillDesc:'胜则伤害×2败则自伤', weapon:'幸运币', armor:'手套' },
+  { id:'pilgrim', name:'朝圣者', emoji:'🙏', desc:'寻找救赎', str:8, agi:8, int:12, cha:12, luk:10, skill:'祈祷', skillDesc:'每战恢复10%HP', weapon:'圣符', armor:'斗篷' },
+];
+
+const ENEMIES = {
+  goblin: { name:'哥布林', hp:35, atk:12, emoji:'👺', xp:30, goldMin:8, goldMax:15 },
+  goblin2: { name:'哥布林战士', hp:45, atk:16, emoji:'👹', xp:40, goldMin:12, goldMax:20 },
+  archer: { name:'哥布林射手', hp:30, atk:14, emoji:'🏹', xp:35, goldMin:10, goldMax:18 },
+  boss: { name:'黑暗学徒', hp:180, atk:28, emoji:'💀', xp:300, goldMin:80, goldMax:150, isBoss:true },
+};
+
+const SKILLS = [
+  { id:'fireArrow', name:'🔥 火焰箭', desc:'造成35-45火焰伤害', cost:15, dmgMin:35, dmgMax:45 },
+  { id:'heal', name:'💚 治疗术', desc:'恢复25-35生命值', cost:15, healMin:25, healMax:35 },
+  { id:'iceArmor', name:'❄️ 冰甲', desc:'防御+15%，被攻击时冻结敌人', cost:0, passive:true },
+  { id:'doubleStrike', name:'⚔️ 双击', desc:'连续攻击两次', cost:12, dmgMin:20, dmgMax:30, hits:2 },
+  { id:'magicMissile', name:'✨ 魔法飞弹', desc:'发射3枚飞弹各10-15伤害', cost:18, dmgMin:10, dmgMax:15, hits:3 },
+];
+
+const SHOP = [
+  { name:'精钢剑', price:180, atk:25, str:5, slot:'weapon', rarity:'fine' },
+  { name:'皮胸甲', price:150, def:20, hp:50, slot:'armor', rarity:'fine' },
+  { name:'法师长袍', price:280, def:15, mp:40, int:8, slot:'armor', rarity:'rare' },
+  { name:'生命戒指', price:300, hp:80, luk:3, slot:'accessory', rarity:'rare' },
+];
+
+const GOODS = [
+  { name:'药材', price:15, trend:'up' },
+  { name:'铁器', price:8, trend:'down' },
+  { name:'丝绸', price:25, trend:'stable' },
+];
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+
+let G = null;
+
+function initGame() {
+  G = {
+    level: 1,
+    xp: 0,
+    nextXp: 100,
+    gold: 50,
+    str: 10, agi: 10, int: 10, cha: 10, luk: 10,
+    hp: 80, maxHp: 80,
+    mp: 60, maxMp: 60,
+    attrPts: 0,
+    skillPts: 0,
+    skills: [],
+    inventory: [],
+    equipment: {},
+    cargo: [],
+    origin: null,
+    inBattle: false,
+    battle: null,
+    firstBattleDone: false,
+    marketVisited: false,
+    taskAccepted: false,
+    bossDefeated: false,
+  };
+}
+
+// ══════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════
+
+function rand(min, max) { return Math.floor(Math.random()*(max-min+1))+min; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function $(id) { return document.getElementById(id); }
+
+function toast(msg, type) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type?' '+type:'');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, type==='levelup'?2500:1800);
+}
+
+function updateStatus() {
+  const sb = $('statusBar');
+  if (!G.origin) { sb.classList.remove('show'); return; }
+  sb.classList.add('show');
+  $('dispLevel').textContent = G.level;
+  $('dispGold').textContent = G.gold;
+  $('dispHP').textContent = G.hp;
+  $('dispMaxHP').textContent = G.maxHp;
+  $('dispMP').textContent = G.mp;
+  $('dispMaxMP').textContent = G.maxMp;
+}
+
+function render(html) { $('mainPanel').innerHTML = html; }
+
+// ══════════════════════════════════════════════════════
+// CALCULATIONS
+// ══════════════════════════════════════════════════════
+
+function calcMaxHp() { return 80 + G.str * 5; }
+function calcMaxMp() { return 60 + G.int * 3; }
+function calcAtk() { return 10 + G.str * 2 + G.int; }
+function calcDef() { return 5 + G.str; }
+function calcCrit() { return 5 + G.luk * 0.5; }
+function calcDodge() { return G.agi * 0.4; }
+
+// ══════════════════════════════════════════════════════
+// SCENES
+// ══════════════════════════════════════════════════════
+
+function sceneIntro() {
+  let html = '<div class="scene-text" style="text-align:center;padding:20px 0">';
+  html += '<div style="font-size:24px;color:#f0c040;margin-bottom:6px">⚔️ 龙途：商路与传奇 ⚔️</div>';
+  html += '<div style="color:#8a7a5a;font-size:12px">第一章：起源</div>';
+  html += '</div><hr class="divider">';
+  html += '<div class="scene-text">你是谁？从何而来？<br>选择你的起源——<br><em>记住：起点不是终点。</em></div><hr class="divider">';
+  html += '<div class="choices">';
+  for (let i = 0; i < ORIGINS.length; i++) {
+    const o = ORIGINS[i];
+    html += '<div class="choice-btn" onclick="selectOrigin(' + i + ')">';
+    html += '<span class="label">' + o.emoji + ' ' + o.name + '</span> — ' + o.desc;
+    html += '<br><span style="color:#7a6a4a;font-size:11px">力' + o.str + '敏' + o.agi + '智' + o.int + '魅' + o.cha + '运' + o.luk + '</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+  render(html);
+}
+
+function selectOrigin(idx) {
+  const o = ORIGINS[idx];
+  G.origin = o;
+  G.str = o.str; G.agi = o.agi; G.int = o.int; G.cha = o.cha; G.luk = o.luk;
+  G.maxHp = calcMaxHp(); G.hp = G.maxHp;
+  G.maxMp = calcMaxMp(); G.mp = G.maxMp;
+  updateStatus();
+  toast(o.emoji + ' 你选择了「' + o.name + '」');
+  sceneWakeUp();
+}
+
+function sceneWakeUp() {
+  const o = G.origin;
+  const stories = {
+    mercenary: '战场上尸横遍野，你从死人堆里爬出来。脑海里只有一个念头：活下去。',
+    apprentice: '魔法学院的钟声还在耳边回响。导师说：你的天赋太危险，离开这里。',
+    merchant: '商队遭袭，货物被劫，你破产了。口袋里只剩几枚金币。',
+    hunter: '森林深处，你追一头白鹿追了三天。然后它消失了，你来到了这里。',
+    gambler: '赌桌上最后一把，你all in然后赢了。但赢家总是最先被盯上的。',
+    pilgrim: '神庙被焚毁，你活了下来。护身符还在，但你需要一个新的开始。',
+  };
+  let html = '<div class="scene-text"><em>【' + o.name + ' · ' + o.desc + '】</em></div>';
+  html += '<div class="scene-text">' + stories[o.id] + '</div><hr class="divider">';
+  html += '<div class="scene-text">你站在坠星湖畔，晨雾弥漫。<br>向东是通往<em>白城</em>的商路。</div><hr class="divider">';
+  html += '<div class="choices">';
+  html += '<div class="choice-btn" onclick="sceneSetOut()">🚶 向东出发</div>';
+  html += '<div class="choice-btn" onclick="sceneWakeUp()">❓ 整理思绪</div>';
+  html += '</div>';
+  render(html);
+}
+
+function sceneSetOut() {
+  let html = '<div class="scene-text">你沿着向东的小路前行。晨雾渐渐散去。<br>30分钟后，前方出现一个岔路口。</div>';
+  html += '<hr class="divider"><div class="scene-text" style="color:#e55">';
+  html += '🗡️ 突然，灌木丛中窜出3只哥布林！<br>它们发现了你！</div><hr class="divider">';
+  html += '<div class="choices">';
+  html += '<div class="choice-btn" onclick="startBattle()">⚔️ 迎战</div>';
+  html += '<div class="choice-btn" onclick="tryFlee()">🏃 逃跑</div>';
+  html += '</div>';
+  render(html);
+}
+
+function tryFlee() {
+  const chance = 30 + calcDodge();
+  if (Math.random()*100 < chance) {
+    toast('🏃 逃跑成功！');
+    sceneAfterBattle();
+  } else {
+    toast('❌ 逃跑失败！');
+    startBattle();
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// BATTLE
+// ══════════════════════════════════════════════════════
+
+function startBattle() {
+  const enemies = [
+    Object.assign({}, ENEMIES.archer, { curHp: ENEMIES.archer.hp }),
+    Object.assign({}, ENEMIES.goblin2, { curHp: ENEMIES.goblin2.hp }),
+    Object.assign({}, ENEMIES.goblin2, { curHp: ENEMIES.goblin2.hp }),
+  ];
+  G.battle = { enemies: enemies, log: [], turn: 0, defending: false, warcry: 0 };
+  G.inBattle = true;
+  renderBattle('战斗开始！');
+}
+
+function renderBattle(msg) {
+  const b = G.battle;
+  let html = '<div class="scene-text"><em>【战斗】</em> ' + msg + '</div>';
+  
+  // Enemies
+  for (let i = 0; i < b.enemies.length; i++) {
+    const e = b.enemies[i];
+    const pct = e.curHp > 0 ? Math.max(1, e.curHp/e.hp*100) : 0;
+    html += '<div style="margin:6px 0;padding:8px;background:#2a1a1a;border-radius:6px">';
+    html += '<div style="display:flex;justify-content:space-between">';
+    html += '<span>' + e.emoji + ' <strong style="color:' + (e.isBoss?'#f80':'#e55') + '">' + e.name + '</strong></span>';
+    html += '<span style="color:#e55">' + Math.max(0, e.curHp) + '/' + e.hp + '</span></div>';
+    html += '<div class="hp-bar"><div class="hp-fill" style="width:' + pct + '%"></div></div>';
+    if (e.curHp <= 0) html += '<span style="color:#555;font-size:11px">💀 已击杀</span>';
+    html += '</div>';
+  }
+  
+  // Player status
+  const hpPct = G.hp > 0 ? Math.max(1, G.hp/G.maxHp*100) : 0;
+  const mpPct = G.mp > 0 ? Math.max(1, G.mp/G.maxMp*100) : 0;
+  html += '<hr class="divider">';
+  html += '<div style="font-size:12px">❤️ HP: ' + G.hp + '/' + G.maxHp + '</div>';
+  html += '<div class="hp-bar"><div class="hp-fill" style="width:' + hpPct + '%"></div></div>';
+  html += '<div style="font-size:12px">💧 MP: ' + G.mp + '/' + G.maxMp + '</div>';
+  html += '<div class="mp-bar"><div class="mp-fill" style="width:' + mpPct + '%"></div></div>';
+  
+  // Log
+  if (b.log.length > 0) {
+    html += '<div style="font-size:11px;color:#7a7a9a;margin-top:6px">';
+    for (let i = Math.max(0, b.log.length-2); i < b.log.length; i++) {
+      html += '<div>' + b.log[i] + '</div>';
+    }
+    html += '</div>';
+  }
+  
+  // Check win/lose
+  const alive = b.enemies.filter(function(e) { return e.curHp > 0; });
+  if (alive.length === 0) {
+    html += '<hr class="divider"><div class="scene-text">🎉 所有敌人被击败！</div>';
+    html += '<div class="choices"><div class="choice-btn" onclick="endBattle()">继续</div></div>';
+    render(html);
+    return;
+  }
+  if (G.hp <= 0) {
+    html += '<hr class="divider"><div class="scene-text" style="text-align:center">💀 你倒下了...</div>';
+    html += '<div class="choices"><div class="choice-btn" onclick="revive()">重新站起来</div></div>';
+    render(html);
+    return;
+  }
+  
+  // Actions
+  html += '<hr class="divider"><div class="choices">';
+  html += '<div class="choice-btn" onclick="playerAttack()">⚔️ 攻击</div>';
+  
+  // Skills
+  const canFireArrow = G.origin.id === 'apprentice' || G.skills.indexOf('fireArrow') >= 0;
+  const canHeal = G.origin.id === 'pilgrim' || G.skills.indexOf('heal') >= 0;
+  
+  if (canFireArrow && G.mp >= 15) {
+    html += '<div class="choice-btn" onclick="playerSkill(\'fireArrow\')">🔥 火焰箭 (15MP)</div>';
+  }
+  if (canHeal && G.mp >= 15) {
+    html += '<div class="choice-btn" onclick="playerSkill(\'heal\')">💚 治疗术 (15MP)</div>';
+  }
+  if (G.origin.id === 'mercenary' && b.warcry === 0) {
+    html += '<div class="choice-btn" onclick="useWarcry()">📢 战吼</div>';
+  }
+  if (G.origin.id === 'gambler') {
+    html += '<div class="choice-btn" onclick="gamblerAttack()">🎲 孤注一掷</div>';
+  }
+  
+  html += '<div class="choice-btn" onclick="playerDefend()">🛡️ 防御</div>';
+  html += '</div>';
+  render(html);
+}
+
+function playerAttack() {
+  const b = G.battle;
+  const alive = b.enemies.filter(function(e) { return e.curHp > 0; });
+  const target = alive[Math.floor(Math.random() * alive.length)];
+  
+  let dmg = rand(calcAtk()*0.8, calcAtk()*1.2);
+  dmg = Math.floor(dmg);
+  
+  // Warcry bonus
+  if (b.warcry > 0) dmg = Math.floor(dmg * 1.15);
+  
+  // Crit
+  const isCrit = Math.random()*100 < calcCrit();
+  if (isCrit) dmg = Math.floor(dmg * 1.5);
+  
+  target.curHp -= dmg;
+  b.log.push('你攻击 ' + target.name + '，造成 <span style="color:#e55">' + dmg + (isCrit?' 会心!':'') + '</span>');
+  
+  if (b.warcry > 0) b.warcry--;
+  
+  setTimeout(function() { enemyTurn(); }, 400);
+}
+
+function playerSkill(sid) {
+  const sk = SKILLS.find(function(s) { return s.id === sid; });
+  if (!sk) return;
+  if (G.mp < sk.cost) { toast('💧 MP不足！'); return; }
+  G.mp -= sk.cost;
+  updateStatus();
+  
+  const b = G.battle;
+  
+  if (sid === 'heal') {
+    const amt = rand(sk.healMin, sk.healMax);
+    G.hp = Math.min(G.maxHp, G.hp + amt);
+    b.log.push('💚 治疗恢复 <span style="color:#5c5">' + amt + '</span> HP');
+    updateStatus();
+  } else if (sid === 'fireArrow') {
+    const alive = b.enemies.filter(function(e) { return e.curHp > 0; });
+    const target = alive[Math.floor(Math.random() * alive.length)];
+    const dmg = rand(sk.dmgMin, sk.dmgMax);
+    target.curHp -= dmg;
+    b.log.push('🔥 火焰箭命中 ' + target.name + '，造成 <span style="color:#f80">' + dmg + '</span>');
+  }
+  
+  setTimeout(function() { enemyTurn(); }, 400);
+}
+
+function useWarcry() {
+  G.battle.warcry = 3;
+  G.battle.log.push('📢 战吼！攻击+15%持续3回合');
+  setTimeout(function() { enemyTurn(); }, 400);
+}
+
+function gamblerAttack() {
+  const roll = Math.random();
+  const winChance = 0.3 + G.luk * 0.02;
+  if (roll < winChance) {
+    toast('🎲 孤注一掷——胜！');
+    const b = G.battle;
+    const alive = b.enemies.filter(function(e) { return e.curHp > 0; });
+    const target = alive[Math.floor(Math.random() * alive.length)];
+    let dmg = calcAtk() * 2;
+    dmg = Math.floor(dmg);
+    target.curHp -= dmg;
+    b.log.push('🎲 孤注一掷成功！对 ' + target.name + ' 造成 <span style="color:#f80">' + dmg + '</span>');
+  } else {
+    toast('🎲 孤注一掷——败！');
+    const dmg = Math.floor(G.hp * 0.3);
+    G.hp = Math.max(1, G.hp - dmg);
+    G.battle.log.push('🎲 孤注一掷失败！自伤 <span style="color:#e55">' + dmg + '</span>');
+    updateStatus();
+  }
+  setTimeout(function() { enemyTurn(); }, 400);
+}
+
+function playerDefend() {
+  G.battle.defending = true;
+  G.battle.log.push('🛡️ 防御姿态');
+  setTimeout(function() { enemyTurn(); }, 400);
+}
+
+function enemyTurn() {
+  const b = G.battle;
+  const alive = b.enemies.filter(function(e) { return e.curHp > 0; });
+  
+  // Pilgrim heal
+  if (G.origin.id === 'pilgrim' && b.turn === 0) {
+    const healAmt = Math.floor(G.maxHp * 0.1);
+    G.hp = Math.min(G.maxHp, G.hp + healAmt);
+    b.log.push('🙏 祈祷恢复 <span style="color:#5c5">' + healAmt + '</span>');
+  }
+  
+  for (let i = 0; i < alive.length; i++) {
+    const e = alive[i];
+    const dodgeRoll = Math.random() * 100;
+    if (dodgeRoll < calcDodge()) {
+      b.log.push('🌿 ' + e.name + ' 的攻击被闪避！');
+      continue;
+    }
+    let dmg = rand(e.atk*0.8, e.atk*1.2);
+    if (b.defending) dmg = Math.floor(dmg * 0.5);
+    G.hp = Math.max(0, G.hp - Math.floor(dmg));
+    b.log.push(e.emoji + ' ' + e.name + ' 攻击，造成 <span style="color:#e55">' + Math.floor(dmg) + '</span>');
+  }
+  
+  b.turn++;
+  b.defending = false;
+  updateStatus();
+  renderBattle('敌方回合');
+}
+
+function endBattle() {
+  G.inBattle = false;
+  const b = G.battle;
+  const isBoss = b.enemies.some(function(e) { return e.isBoss; });
+  
+  let totalXp = 0;
+  let totalGold = 0;
+  for (let i = 0; i < b.enemies.length; i++) {
+    const e = b.enemies[i];
+    totalXp += e.xp;
+    totalGold += rand(e.goldMin, e.goldMax);
+  }
+  
+  G.xp += totalXp;
+  G.gold += totalGold;
+  
+  let levelUp = false;
+  while (G.xp >= G.nextXp) {
+    G.xp -= G.nextXp;
+    G.level++;
+    G.nextXp = Math.floor(100 * Math.pow(G.level, 1.5));
+    G.attrPts += 3;
+    G.skillPts += 1;
+    levelUp = true;
+  }
+  if (levelUp) {
+    toast('⬆️ 升级！等级 ' + G.level, 'levelup');
+  }
+  
+  // Drop
+  let dropText = '';
+  if (Math.random() < 0.3) {
+    const drop = { name:'哥布林短剑', atk:12, str:3, slot:'weapon', rarity:'fine' };
+    G.inventory.push(drop);
+    dropText = '<br>📦 掉落：<span class="rarity-fine">' + drop.name + '</span>';
+  }
+  
+  G.firstBattleDone = true;
+  if (isBoss) G.bossDefeated = true;
+  G.battle = null;
+  updateStatus();
+  
+  if (isBoss) {
+    sceneBossVictory(totalXp, totalGold);
+  } else {
+    sceneAfterBattle(totalXp, totalGold, dropText, levelUp);
+  }
+}
+
+function revive() {
+  G.hp = Math.floor(G.maxHp * 0.5);
+  G.mp = Math.floor(G.maxMp * 0.5);
+  updateStatus();
+  sceneWakeUp();
+}
+
+function sceneAfterBattle(xp, gold, dropText, levelUp) {
+  let html = '<div class="scene-text">【战斗胜利！】</div>';
+  html += '<div class="scene-text">获得 ⭐' + xp + ' XP | 💰' + gold + ' 金币' + (dropText||'') + '</div>';
+  if (levelUp) {
+    html += '<div style="color:#f0c040;margin-top:8px">⬆️ 升级！等级 ' + G.level + ' | +3属性点 +1技能点</div>';
+  }
+  html += '<hr class="divider"><div class="choices">';
+  if (G.attrPts > 0) {
+    html += '<div class="choice-btn" onclick="sceneAllocAttr()">💪 分配属性点 (' + G.attrPts + '点)</div>';
+  }
+  if (G.skillPts > 0) {
+    html += '<div class="choice-btn" onclick="sceneLearnSkill()">📖 学习技能 (' + G.skillPts + '点)</div>';
+  }
+  html += '<div class="choice-btn" onclick="sceneWhiteCity()">🏰 继续前往白城</div>';
+  html += '</div>';
+  render(html);
+}
+
+// ══════════════════════════════════════════════════════
+// ATTRIBUTES
+// ══════════════════════════════════════════════════════
+
+let attrDraft = null;
+
+function sceneAllocAttr() {
+  if (!attrDraft) {
+    attrDraft = { str: G.str, agi: G.agi, int: G.int, cha: G.cha, luk: G.luk, pts: G.attrPts };
+  }
+  const attrs = [
+    { key: 'str', name: '⚔️ 力量', hint: '+2物攻/+5HP', val: attrDraft.str },
+    { key: 'agi', name: '🌿 敏捷', hint: '+闪避/+攻速', val: attrDraft.agi },
+    { key: 'int', name: '🧙 智力', hint: '+2魔攻/+3MP', val: attrDraft.int },
+    { key: 'cha', name: '💬 魅力', hint: '+商店折扣', val: attrDraft.cha },
+    { key: 'luk', name: '🎲 幸运', hint: '+会心/+掉落', val: attrDraft.luk },
+  ];
+  
+  let html = '<div class="scene-text"><em>【属性分配】</em></div>';
+  html += '<div class="points-left">剩余：<strong>' + attrDraft.pts + '</strong> 点</div>';
+  
+  for (let i = 0; i < attrs.length; i++) {
+    const a = attrs[i];
+    html += '<div class="attr-row">';
+    html += '<span class="attr-name">' + a.name + '</span>';
+    html += '<span class="attr-value">' + a.val + '</span>';
+    html += '<span class="attr-hint">' + a.hint + '</span>';
+    html += '<div class="attr-btns">';
+    html += '<button class="attr-btn" onclick="adjAttr(\'' + a.key + '\',-1)">−</button>';
+    html += '<button class="attr-btn" onclick="adjAttr(\'' + a.key + '\',1)">+</button>';
+    html += '</div></div>';
+  }
+  
+  html += '<button class="confirm-btn" onclick="confirmAttr()" ' + (attrDraft.pts>0?'disabled':'') + '>确认分配</button>';
+  html += '<button class="confirm-btn" onclick="resetAttr()" style="background:#444;color:#aaa;margin-top:6px">重置</button>';
+  render(html);
+}
+
+function adjAttr(key, delta) {
+  const baseVal = G[key];
+  const current = attrDraft[key];
+  const ptsLeft = attrDraft.pts;
+  
+  if (delta > 0 && ptsLeft <= 0) return;
+  if (delta < 0 && current <= baseVal) return;
+  
+  attrDraft[key] += delta;
+  attrDraft.pts -= delta;
+  sceneAllocAttr();
+}
+
+function resetAttr() {
+  attrDraft = { str: G.str, agi: G.agi, int: G.int, cha: G.cha, luk: G.luk, pts: G.attrPts };
+  sceneAllocAttr();
+}
+
+function confirmAttr() {
+  if (attrDraft.pts > 0) { toast('还有属性点未分配'); return; }
+  G.str = attrDraft.str; G.agi = attrDraft.agi; G.int = attrDraft.int;
+  G.cha = attrDraft.cha; G.luk = attrDraft.luk;
+  G.maxHp = calcMaxHp(); G.hp = Math.min(G.hp, G.maxHp);
+  G.maxMp = calcMaxMp(); G.mp = Math.min(G.mp, G.maxMp);
+  G.attrPts = 0;
+  attrDraft = null;
+  updateStatus();
+  toast('✅ 属性分配完成');
+  sceneWhiteCity();
+}
+
+// ══════════════════════════════════════════════════════
+// SKILLS
+// ══════════════════════════════════════════════════════
+
+function sceneLearnSkill() {
+  const available = SKILLS.filter(function(s) { return G.skills.indexOf(s.id) < 0; });
+  let html = '<div class="scene-text"><em>【技能学习】技能点：' + G.skillPts + '</em></div>';
+  html += '<div class="scene-text">选择一个技能学习：</div>';
+  
+  for (let i = 0; i < available.length; i++) {
+    const s = available[i];
+    html += '<div class="skill-card" onclick="learnSkill(\'' + s.id + '\')">';
+    html += '<div class="skill-name">' + s.name + '</div>';
+    html += '<div class="skill-desc">' + s.desc + '</div>';
+    html += '</div>';
+  }
+  
+  html += '<button class="confirm-btn" onclick="sceneWhiteCity()" style="background:#444;color:#aaa">暂时不学</button>';
+  render(html);
+}
+
+function learnSkill(sid) {
+  if (G.skillPts <= 0) return;
+  G.skills.push(sid);
+  G.skillPts--;
+  const sk = SKILLS.find(function(s) { return s.id === sid; });
+  toast('✅ 习得「' + sk.name + '」！');
+  updateStatus();
+  if (G.skillPts > 0) sceneLearnSkill();
+  else sceneWhiteCity();
+}
+
+// ══════════════════════════════════════════════════════
+// WHITE CITY
+// ══════════════════════════════════════════════════════
+
+function sceneWhiteCity() {
+  let html = '<div class="scene-text">🏰 【白城·中央广场】<br>你走进白城。热闹的集市、叫卖的商贩、庞大的冒险者公会大楼...</div>';
+  html += '<hr class="divider">';
+  html += '<div style="font-size:12px;background:#2a2a3e;padding:8px;border-radius:6px">';
+  html += G.origin.emoji + ' ' + G.origin.name + ' | Lv.' + G.level + ' | 💰 ' + G.gold;
+  html += '<br>⚔️' + G.str + ' 🌿' + G.agi + ' 🧙' + G.int + ' 💬' + G.cha + ' 🎲' + G.luk;
+  html += '</div><hr class="divider">';
+  html += '<div class="choices">';
+  html += '<div class="choice-btn" onclick="sceneMarket()">🏪 市场</div>';
+  html += '<div class="choice-btn" onclick="sceneSmith()">⚒️ 铁匠铺</div>';
+  html += '<div class="choice-btn" onclick="sceneInn()">🍺 旅店</div>';
+  html += '<div class="choice-btn" onclick="sceneGuild()">📜 冒险者公会</div>';
+  html += '<div class="choice-btn" onclick="sceneInventory()">🎒 背包</div>';
+  if (G.attrPts > 0) html += '<div class="choice-btn" onclick="sceneAllocAttr()">💪 属性点 (' + G.attrPts + ')</div>';
+  if (G.skillPts > 0) html += '<div class="choice-btn" onclick="sceneLearnSkill()">📖 技能点 (' + G.skillPts + ')</div>';
+  html += '</div>';
+  render(html);
+}
+
+// ══════════════════════════════════════════════════════
+// MARKET
+// ══════════════════════════════════════════════════════
+
+function sceneMarket() {
+  const discount = (G.origin.id === 'merchant' && !G.marketVisited) ? 0.8 : 1;
+  G.marketVisited = true;
+  
+  let html = '<div class="scene-text"><em>【白城市场】</em> 金币：<strong style="color:#f0c040">' + G.gold + '</strong></div>';
+  if (G.origin.id === 'merchant' && !G.firstBattleDone) {
+    html += '<div style="color:#5f5;font-size:11px">✨ 讨价还价生效！首笔8折</div>';
+  }
+  html += '<hr class="divider">';
+  
+  for (let i = 0; i < GOODS.length; i++) {
+    const g = GOODS[i];
+    const price = Math.floor(g.price * discount);
+    const trendClass = g.trend === 'up' ? 'trend-up' : (g.trend === 'down' ? 'trend-down' : 'trend-stable');
+    const trendText = g.trend === 'up' ? '📈 高价' : (g.trend === 'down' ? '📉 低价' : '📊 稳定');
+    
+    html += '<div class="market-item">';
+    html += '<div><span style="color:#c8b890">' + g.name + '</span></div>';
+    html += '<div style="text-align:right">';
+    html += '<div style="color:#f0c040">💰 ' + price + ' 金/单位</div>';
+    html += '<div class="' + trendClass + '">' + trendText + '</div>';
+    html += '<div style="margin-top:4px">';
+    html += '<button class="choice-btn" style="padding:4px 8px;font-size:11px" onclick="buyGoods(' + i + ',' + price + ',1)">+1</button>';
+    html += '<button class="choice-btn" style="padding:4px 8px;font-size:11px;margin-left:4px" onclick="buyGoods(' + i + ',' + price + ',10)">+10</button>';
+    html += '</div></div></div>';
+  }
+  
+  html += '<hr class="divider">';
+  html += '<div style="font-size:12px">📦 货舱：' + G.cargo.length + '/100</div>';
+  html += '<hr class="divider"><div class="choices">';
+  html += '<div class="choice-btn" onclick="sellGoods()">💰 前往他处贩卖</div>';
+  html += '<div class="choice-btn" onclick="sceneWhiteCity()">↩️ 返回</div>';
+  html += '</div>';
+  render(html);
+}
+
+function buyGoods(idx, price, qty) {
+  const cost = price * qty;
+  if (G.gold < cost) { toast('💰 金币不足！'); return; }
+  if (G.cargo.length + qty > 100) { toast('📦 货舱已满！'); return; }
+  G.gold -= cost;
+  for (let i = 0; i < qty; i++) G.cargo.push({ name: GOODS[idx].name, buyPrice: price });
+  updateStatus();
+  toast('✅ 购买 ' + qty + ' 单位' + GOODS[idx].name);
+  sceneMarket();
+}
+
+function sellGoods() {
+  if (G.cargo.length === 0) { toast('📦 货舱空空！'); return; }
+  const dest = Math.random() < 0.5 ? '坠星湖畔' : '幽暗森林';
+  const multiplier = dest === '坠星湖畔' ? 1.5 : 1.3;
+  
+  let total = 0;
+  for (let i = 0; i < G.cargo.length; i++) {
+    total += Math.floor(G.cargo[i].buyPrice * multiplier);
+  }
+  G.gold += total;
+  G.cargo = [];
+  G.firstBattleDone = true;
+  updateStatus();
+  
+  let html = '<div class="scene-text"><em>【商贸结算】前往 ' + dest + '</em></div>';
+  html += '<div style="text-align:center;font-size:20px;color:#f0c040;margin:20px 0">💰 获得 ' + total + ' 金币！</div>';
+  html += '<hr class="divider"><div class="choices">';
+  html += '<div class="choice-btn" onclick="sceneWhiteCity()">↩️ 返回白城</div>';
+  html += '</div>';
+  render(html);
+}
+
+// ══════════════════════════════════════════════════════
+// BLACKSMITH
+// ══════════════════════════════════════════════════════
+
+function sceneSmith() {
+  let html = '<div class="scene-text"><em>【铁匠铺】</em> 金币：<strong style="color:#f0c040">' + G.gold + '</strong></div>';
+  html += '<div class="scene-text" style="font-size:12px;color:#8a7a5a">矮人铁匠：「想看好东西？来对地方了！」</div>';
+  html += '<hr class="divider">';
+  
+  for (let i = 0; i < SHOP.length; i++) {
+    const item = SHOP[i];
+    const canBuy = G.gold >= item.price;
+    const cls = 'rarity-' + item.rarity;
+    
+    html += '<div class="skill-card" style="' + (canBuy?'':'opacity:0.5') + '">';
+    html += '<div class="skill-name ' + cls + '">' + item.name + '</div>';
+    html += '<div style="font-size:11px;color:#7a6a4a">';
+    if (item.atk) html += '⚔️攻+' + item.atk + ' ';
+    if (item.def) html += '🛡️防+' + item.def + ' ';
+    if (item.hp) html += '❤️HP+' + item.hp + ' ';
+    if (item.mp) html += '💧MP+' + item.mp + ' ';
+    if (item.str) html += '力+' + item.str + ' ';
+    if (item.int) html += '智+' + item.int + ' ';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">';
+    html += '<span style="color:#f0c040">💰 ' + item.price + '</span>';
+    html += '<button class="choice-btn" style="padding:4px 10px;font-size:11px" onclick="buyItem(' + i + ')" ' + (canBuy?'':'disabled') + '>' + (canBuy?'购买':'不足') + '</button>';
+    html += '</div></div>';
+  }
+  
+  html += '<hr class="divider"><div class="choices">';
+  html += '<div class="choice-btn" onclick="sceneWhiteCity()">↩️ 返回</div>';
+  html += '</div>';
+  render(html);
+}
+
+function buyItem(idx) {
+  const item = SHOP[idx];
+  if (G.gold < item.price) { toast('💰 金币不足'); return; }
+  G.gold -= item.price;
+  G.inventory.push(Object.assign({}, item, { id: 'item_' + Date.now() }));
+  updateStatus();
+  toast('✅ 购买了「' + item.name + '」');
+  sceneSmith();
+}
+
+// ══════════════════════════════════════════════════════
+// INVENTORY
+// ══════════════════════════════════════════════════════
+
+function sceneInventory() {
+  let html = '<div class="scene-text"><em>【背包 & 装备】</em></div>';
+  html += '<div style="font-size:12px;color:#8a7a5a">已装备：</div>';
+  
+  const slots = ['weapon','armor','accessory'];
+  const names = { weapon:'武器', armor:'铠甲', accessory:'饰品' };
+  for (let i = 0; i < slots.length; i++) {
+    const slot = slots[i];
+    const eq = G.equipment[slot];
+    html += '<div class="attr-row">';
+    html += '<span style="color:#7a6a4a">' + names[slot] + '：</span>';
+    if (eq) {
+      html += '<span class="rarity-' + eq.rarity + '">' + eq.name + '</span>';
+      html += '<button style="font-size:10px;padding:2px 6px;background:#444;border:none;border-radius:3px;color:#aaa;cursor:pointer;margin-left:6px" onclick="unequip(\'' + slot + '\')">卸下</button>';
+    } else {
+      html += '<span style="color:#555">(空)</span>';
+    }
+    html += '</div>';
+  }
+  
+  html += '<hr class="divider">';
+  html += '<div style="font-size:12px;color:#8a7a5a">背包（' + G.inventory.length + '件）：</div>';
+  
+  if (G.inventory.length === 0) {
+    html += '<div style="color:#555;font-size:12px">空空如也</div>';
+  } else {
+    for (let i = 0; i < G.inventory.length; i++) {
+      const item = G.inventory[i];
+      html += '<div class="attr-row">';
+      html += '<span class="rarity-' + item.rarity + '">' + item.name + '</span>';
+      html += '<button style="font-size:10px;padding:2px 6px;background:#5a5a3a;border:none;border-radius:3px;color:#f0c040;cursor:pointer" onclick="equipItem(' + i + ')">装备</button>';
+      html += '</div>';
+    }
+  }
+  
+  html += '<hr class="divider">';
+  html += '<button class="confirm-btn" onclick="sceneWhiteCity()" style="background:#444;color:#aaa">返回</button>';
+  render(html);
+}
+
+function equipItem(idx) {
+  const item = G.inventory[idx];
+  const slot = item.slot;
+  if (G.equipment[slot]) {
+    G.inventory.push(G.equipment[slot]);
+  }
+  G.equipment[slot] = item;
+  G.inventory.splice(idx, 1);
+  G.maxHp = calcMaxHp(); G.hp = Math.min(G.hp, G.maxHp);
+  G.maxMp = calcMaxMp(); G.mp = Math.min(G.mp, G.maxMp);
+  updateStatus();
+  toast('✅ 装备了「' + item.name + '」');
+  sceneInventory();
+}
+
+function unequip(slot) {
+  const item = G.equipment[slot];
+  if (!item) return;
+  G.inventory.push(item);
+  delete G.equipment[slot];
+  G.maxHp = calcMaxHp(); G.hp = Math.min(G.hp, G.maxHp);
+  G.maxMp = calcMaxMp(); G.mp = Math.min(G.mp, G.maxMp);
+  updateStatus();
+  toast('📦 卸下了「' + item.name + '」');
+  sceneInventory();
+}
+
+// ══════════════════════════════════════════════════════
+// INN
+// ══════════════════════════════════════════════════════
+
+function sceneInn() {
+  let html = '<div class="scene-text"><em>【旅店】</em></div>';
+  html += '<div class="scene-text" style="font-size:12px;color:#8a7a5a">旅店老板：「住一晚10金币，恢复全部HP和MP！」</div>';
+  html += '<hr class="divider">';
+  html += '<div class="scene-text">❤️ HP: ' + G.hp + '/' + G.maxHp + ' | 💧 MP: ' + G.mp + '/' + G.maxMp + '</div>';
+  html += '<hr class="divider"><div class="choices">';
+  html += '<div class="choice-btn" onclick="rest()">🛏️ 住宿 (10金币)</div>';
+  html += '<div class="choice-btn" onclick="sceneWhiteCity()">↩️ 返回</div>';
+  html += '</div>';
+  render(html);
+}
+
+function rest() {
+  if (G.gold < 10) { toast('💰 金币不足！'); return; }
+  G.gold -= 10;
+  G.hp = G.maxHp;
+  G.mp = G.maxMp;
+  updateStatus();
+  toast('😴 休息完毕！HP/MP完全恢复');
+  sceneInn();
+}
+
+// ══════════════════════════════════════════════════════
+// GUILD
+// ══════════════════════════════════════════════════════
+
+function sceneGuild() {
+  let html = '<div class="scene-text"><em>【冒险者公会】</em></div>';
+  html += '<div class="scene-text" style="font-size:12px;color:#8a7a5a">接待员：「新人？先接个任务吧。」</div>';
+  html += '<hr class="divider">';
+  
+  const tasks = ['寻找失踪商队','采集月光草','护送商队'];
+  for (let i = 0; i < tasks.length; i++) {
+    html += '<div class="skill-card" onclick="acceptTask(' + i + ')">';
+    html += '<div class="skill-name">📜 ' + tasks[i] + '</div>';
+    html += '<div class="skill-desc">奖励：经验 + 金币 + 好感度</div>';
+    html += '</div>';
+  }
+  
+  html += '<hr class="divider"><div class="choices">';
+  html += '<div class="choice-btn" onclick="sceneWhiteCity()">↩️ 暂不接任务</div>';
+  html += '</div>';
+  render(html);
+}
+
+function acceptTask(idx) {
+  const tasks = ['寻找失踪商队','采集月光草','护送商队'];
+  G.taskAccepted = true;
+  toast('✅ 接受了「' + tasks[idx] + '」');
+  
+  let html = '<div class="scene-text"><em>【任务开始】</em></div>';
+  html += '<div class="scene-text">你离开了白城，前往任务地点...</div>';
+  html += '<hr class="divider"><div class="choices">';
+  html += '<div class="choice-btn" onclick="startBoss()">⚔️ 进入Boss战</div>';
+  html += '<div class="choice-btn" onclick="sceneWhiteCity()">↩️ 返回准备</div>';
+  html += '</div>';
+  render(html);
+}
+
+// ══════════════════════════════════════════════════════
+// BOSS
+// ══════════════════════════════════════════════════════
+
+function startBoss() {
+  const boss = Object.assign({}, ENEMIES.boss, { curHp: ENEMIES.boss.hp });
+  const minions = [
+    Object.assign({}, ENEMIES.goblin2, { curHp: ENEMIES.goblin2.hp }),
+    Object.assign({}, ENEMIES.goblin2, { curHp: ENEMIES.goblin2.hp }),
+  ];
+  G.battle = { enemies: [boss, minions[0], minions[1]], log: [], turn: 0, defending: false, warcry: 0 };
+  G.inBattle = true;
+  renderBattle('💀 黑暗学徒出现在你面前！');
+}
+
+function sceneBossVictory(xp, gold) {
+  let html = '<div class="chapter-end">';
+  html += '<h2>🏆 第一章完结</h2>';
+  html += '<p>击败黑暗学徒后，他留下最后一句话：</p>';
+  html += '<p style="color:#e55;font-style:italic">「你以为这是结束？找到守望者...</p>';
+  html += '<hr class="divider">';
+  html += '<p>获得 ⭐' + xp + ' XP | 💰' + gold + ' 金币</p>';
+  html += '<hr class="divider">';
+  html += '<p style="color:#8a7a5a">第二章：白城阴谋（开发中）</p>';
+  html += '<hr class="divider"><div class="choices">';
+  html += '<div class="choice-btn" onclick="restartGame()">🔄 重新开始</div>';
+  html += '<div class="choice-btn" onclick="sceneWhiteCity()">🔙 自由探索</div>';
+  html += '</div></div>';
+  render(html);
+}
+
+function restartGame() {
+  initGame();
+  sceneIntro();
+}
+
+// ══════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════
+
+initGame();
+sceneIntro();
+</script>
+</body>
+</html>

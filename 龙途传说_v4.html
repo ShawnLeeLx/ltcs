@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>龙途传说 v4</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:#0a0a14;color:#d4c4a0;font-family:'PingFang SC','Microsoft YaHei','SimSun',monospace}
+.container{max-width:420px;margin:0 auto;padding:8px;height:100%;display:flex;flex-direction:column}
+
+.game-header{text-align:center;padding:6px 0 2px}
+.game-title{font-size:18px;color:#d4a017;letter-spacing:3px;text-shadow:0 0 10px rgba(212,160,23,0.4)}
+.game-subtitle{color:#5a5a4a;font-size:10px}
+
+.status-bar{background:#12121f;border:1px solid #3a3a2a;border-radius:4px;padding:5px 8px;margin-bottom:6px;font-size:11px;font-family:monospace;flex-shrink:0}
+.srow{display:flex;justify-content:space-between;margin:2px 0}
+.shp{color:#c44}.smp{color:#48f}.sgold{color:#d4a017}.sxp{color:#4a4}
+
+.scroll-frame{border:2px solid #4a3a2a;border-radius:4px;background:linear-gradient(180deg,#12121f,#0f0f18);flex:1;overflow:hidden;display:flex;flex-direction:column}
+.scroll-frame::before{content:'═══════════════════════════';display:block;text-align:center;color:#4a3a2a;font-size:9px;letter-spacing:1px}
+
+.panel{padding:10px;overflow-y:auto;overflow-x:hidden;font-size:13px;line-height:1.7;flex:1}
+.panel::-webkit-scrollbar{width:2px}
+.panel::-webkit-scrollbar-track{background:#0a0a14}
+.panel::-webkit-scrollbar-thumb{background:#3a3a2a}
+
+.scene{color:#b8a880;margin-bottom:6px}.scene em{color:#d4a017;font-style:normal}
+.divider{border:none;border-top:1px dashed #2a2a1a;margin:5px 0}
+
+.btn{background:#1a1a28;border:1px solid #3a3a2a;border-radius:3px;color:#b8a880;padding:6px 8px;text-align:left;cursor:pointer;font-size:12px;transition:all 0.1s;font-family:inherit}
+.btn:hover{background:#252535;border-color:#d4a017;color:#d4a017}
+.btn:active{transform:scale(0.97)}
+.btn .lbl{color:#d4a017;font-weight:bold}
+.btn.center{text-align:center}
+.btns{display:flex;flex-direction:column;gap:4px}
+
+/* Origin card */
+.origin-card{background:#151520;border:1px solid #3a3a2a;border-radius:4px;padding:10px;margin:4px 0;cursor:pointer}
+.origin-card:hover{border-color:#d4a017;background:#1a1a28}
+.oc-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.oc-emoji{font-size:20px}
+.oc-name{font-size:14px;color:#d4a017;font-weight:bold}
+.oc-desc{color:#7a7a6a;font-size:11px}
+.oc-attrs{color:#5a5a4a;font-size:10px;margin-top:4px}
+.oc-skill{background:#1a1a28;border-radius:3px;padding:4px 6px;margin-top:6px;font-size:11px}
+.os-name{color:#d4a017}.os-type{color:#5a5a4a;font-size:10px}.os-desc{color:#888}
+
+/* Attribute allocation */
+.attr-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1a1a20}
+.attr-name{color:#b8a880;width:80px;font-size:12px}
+.attr-val{color:#d4a017;width:60px;text-align:center;font-weight:bold;font-size:13px}
+.attr-delta{color:#5c5;font-size:11px;width:30px}
+.attr-hint{color:#5a5a4a;font-size:10px;flex:1;text-align:right}
+.attr-btns{display:flex;gap:4px}
+.abtn{width:24px;height:24px;border:1px solid #3a3a2a;border-radius:3px;background:#1a1a28;color:#b8a880;font-size:12px;cursor:pointer}
+.abtn:hover{background:#252535;border-color:#d4a017}
+.abtn:disabled{opacity:0.3;cursor:not-allowed}
+.pts-left{text-align:center;color:#d4a017;font-size:12px;margin:6px 0;padding:4px;background:#1a1a28;border-radius:4px}
+
+/* Combat */
+.enemy-box{background:#0f0f18;border:1px solid #2a2a2a;border-radius:4px;padding:6px;margin:4px 0;cursor:pointer;transition:all 0.15s}
+.enemy-box:hover{border-color:#d4a017}
+.enemy-box.selected{border-color:#f80;background:#1a1a28;box-shadow:0 0 8px rgba(255,136,0,0.3)}
+.enemy-box.dead{opacity:0.3;cursor:default}
+.eb-art{text-align:center;font-family:monospace;font-size:9px;color:#6b8a5a;white-space:pre;line-height:1.1;margin:2px 0}
+.eb-info{display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.eb-name{color:#d4a017}
+.eb-hp{color:#c44}
+.hpbar{background:#2a1a1a;border-radius:2px;height:10px;overflow:hidden;margin-top:2px}
+.hpfill{background:#c44;height:100%;transition:width 0.2s}
+.mpbar{background:#1a1a3a;border-radius:2px;height:8px;overflow:hidden}
+.mpfill{background:#48f;height:100%;transition:width 0.2s}
+
+.player-status{background:#0f0f18;border-radius:4px;padding:6px;margin:4px 0}
+.ps-bars{display:flex;gap:8px}
+.ps-bar{flex:1}
+.ps-label{font-size:10px;color:#5a5a4a;display:flex;justify-content:space-between}
+.ps-hp .hpbar{height:12px}.ps-mp .mpbar{height:8px}
+
+.attack-modes{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.am-btn{flex:1;min-width:80px;background:#1a1a28;border:1px solid #3a3a2a;border-radius:3px;padding:4px 6px;text-align:center;cursor:pointer;font-size:11px;color:#b8a880}
+.am-btn:hover{background:#252535;border-color:#d4a017}
+.am-btn.active{background:#252535;border-color:#f80;color:#f80}
+
+/* Town map */
+.town-visual{font-family:monospace;font-size:10px;color:#6b5a3a;text-align:center;white-space:pre;line-height:1.3;padding:8px;background:#0a0a14;border:1px solid #2a2a1a;border-radius:4px;margin:6px 0}
+.town-bld{color:#d4a017;cursor:pointer}
+.town-bld:hover{color:#f80;text-decoration:underline}
+
+/* World map */
+.world-visual{font-family:monospace;font-size:9px;color:#5a5a4a;text-align:center;white-space:pre;line-height:1.5;padding:6px;background:#08080f;border:1px solid #1a1a20;border-radius:4px;margin:4px 0}
+.wv-loc{color:#d4a017;cursor:pointer;font-weight:bold}
+.wv-loc:hover{color:#f80}
+.wv-cur{color:#f80}
+.wv-locked{color:#3a3a3a}
+
+/* Dungeon map */
+.dungeon-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:#0a0a14;padding:6px;border-radius:4px;margin:6px 0}
+.dg-cell{aspect-ratio:1;background:#151520;border:1px solid #2a2a2a;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.dg-cell.player{background:#1a2a1a;border-color:#4a4}
+.dg-cell.visited{background:#1a1a20}
+.dg-cell.exit{border-color:#d4a017}
+.dir-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-width:180px;margin:6px auto}
+.dir-btn{background:#1a1a28;border:1px solid #3a3a2a;border-radius:4px;padding:8px;text-align:center;cursor:pointer;font-size:16px;color:#d4a017}
+.dir-btn:hover{background:#252535;border-color:#d4a017}
+.dir-btn:disabled{opacity:0.3;cursor:not-allowed}
+
+/* Skill card */
+.sk-card{background:#151520;border:1px solid #3a3a2a;border-radius:4px;padding:6px;margin:4px 0;cursor:pointer}
+.sk-card:hover{border-color:#d4a017}
+.sk-header{display:flex;justify-content:space-between;align-items:center}
+.sk-name{color:#d4a017;font-weight:bold;font-size:12px}
+.sk-type{color:#5a5a4a;font-size:9px;background:#1a1a28;padding:2px 4px;border-radius:2px}
+.sk-desc{color:#7a7a6a;font-size:10px;margin-top:2px}
+
+/* Name input */
+.name-input{width:100%;padding:8px;background:#1a1a28;border:1px solid #4a3a2a;border-radius:4px;color:#d4a017;font-size:14px;text-align:center;font-family:inherit}
+.name-input:focus{outline:none;border-color:#d4a017}
+
+/* Confirm/Cancel */
+.confirm-btn{display:block;width:100%;padding:8px;background:linear-gradient(135deg,#d4a017,#a08010);border:none;border-radius:4px;color:#0a0a14;font-size:12px;font-weight:bold;cursor:pointer;margin-top:6px}
+.confirm-btn:hover{filter:brightness(1.1)}
+.confirm-btn:disabled{opacity:0.3;cursor:not-allowed}
+.cancel-btn{display:block;width:100%;padding:6px;background:#1a1a28;border:1px solid #3a3a2a;border-radius:4px;color:#888;font-size:11px;cursor:pointer;margin-top:4px}
+
+/* Toast */
+.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#d4a017;color:#0a0a14;padding:5px 14px;border-radius:14px;font-size:11px;font-weight:bold;z-index:999;opacity:0;transition:opacity 0.2s;pointer-events:none;max-width:90%}
+.toast.show{opacity:1}
+.toast.lvl{background:linear-gradient(135deg,#d4a017,#e44);font-size:13px;padding:6px 16px}
+
+.rarity-common{color:#888}.rarity-fine{color:#5c5}.rarity-rare{color:#48f}.rarity-epic{color:#a5a}.rarity-legendary{color:#f80}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="game-header">
+<div class="game-title">⚔ 龙途传说 ⚔</div>
+<div class="game-subtitle">v4 · 试玩版</div>
+</div>
+<div class="status-bar" id="statusBar">
+<div class="srow"><span id="dispName"></span><span>Lv.<em id="dispLv">1</em></span><span class="sgold">💰<em id="dispGold">50</em></span></div>
+<div class="srow"><span class="shp">HP <em id="dispHp">80</em>/<em id="dispMhp">80</em></span><span class="smp">MP <em id="dispMp">60</em>/<em id="dispMmp">60</em></span></div>
+<div class="srow"><span class="sxp">EXP <em id="dispXp">0</em>/<em id="dispNxp">100</em></span><span>属性点<em id="dispAp">0</em></span></div>
+</div>
+<div class="scroll-frame">
+<div class="panel" id="panel"></div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="game_v4.js"></script>
+</body>
+</html>
