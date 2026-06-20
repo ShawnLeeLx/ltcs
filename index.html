@@ -7582,6 +7582,150 @@ function updateStatus() {
   var nav = document.getElementById('mobileNav');
   if (nav) nav.style.display = (G.inBattle || G.battle) ? 'none' : '';
 }
+// ═══════════════════════════════════════════════════════════
+// 8-BIT SFX ENGINE — Web Audio API 方波合成
+// ═══════════════════════════════════════════════════════════
+var SFX = (function() {
+  var _ctx = null;
+  var _vol = 0.3;
+  var _muted = false;
+  var _enabled = true;
+
+  function ctx() {
+    if (!_ctx) {
+      try { _ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e) { _enabled = false; return null; }
+    }
+    if (_ctx.state === 'suspended') _ctx.resume();
+    return _ctx;
+  }
+
+  // 核心：播放一个方波音
+  function beep(freq, duration, type, volMod) {
+    var c = ctx();
+    if (!c || _muted || !_enabled) return;
+    var osc = c.createOscillator();
+    var gain = c.createGain();
+    osc.type = type || 'square';
+    osc.frequency.value = freq;
+    gain.gain.value = _vol * (volMod || 1);
+    // 快速衰减避免爆音
+    gain.gain.setValueAtTime(_vol * (volMod || 1), c.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(c.destination);
+    osc.start(c.currentTime);
+    osc.stop(c.currentTime + duration);
+  }
+
+  // 播放音符序列
+  function playSeq(notes, gap) {
+    var c = ctx();
+    if (!c || _muted || !_enabled) return;
+    gap = gap || 0.08;
+    for (var i = 0; i < notes.length; i++) {
+      (function(idx) {
+        setTimeout(function() {
+          var n = notes[idx];
+          beep(n[0], n[1] || 0.1, n[2] || 'square', n[3] || 1);
+        }, idx * gap * 1000);
+      })(i);
+    }
+  }
+
+  // ─── 音效定义 ───
+  var SOUNDS = {
+    // 战斗
+    attack: function() { playSeq([[440,0.06],[880,0.08],[660,0.05]], 0.04); },
+    crit: function() { playSeq([[440,0.04],[880,0.04],[1320,0.04],[1760,0.1]], 0.03); },
+    enemyHit: function() { beep(200, 0.1, 'sawtooth', 0.6); },
+    defend: function() { playSeq([[330,0.08],[220,0.12]], 0.05); },
+    skill: function() { playSeq([[523,0.05],[659,0.05],[784,0.08]], 0.04); },
+    originSkill: function() { playSeq([[392,0.05],[523,0.05],[659,0.05],[784,0.05],[1047,0.15]], 0.04); },
+    enemySkill: function() { playSeq([[300,0.06],[200,0.06],[150,0.1]], 0.04); },
+    poison: function() { beep(120, 0.15, 'sawtooth', 0.4); },
+    heal: function() { playSeq([[523,0.06],[659,0.06],[784,0.1]], 0.06); },
+    flee: function() { playSeq([[600,0.05],[400,0.05],[300,0.05],[200,0.08]], 0.04); },
+    death: function() { playSeq([[400,0.1],[300,0.1],[200,0.15],[100,0.3]], 0.1); },
+    battleStart: function() { playSeq([[262,0.08],[330,0.08],[392,0.08],[523,0.12]], 0.06); },
+    battleWin: function() { playSeq([[523,0.08],[659,0.08],[784,0.08],[1047,0.15]], 0.06); },
+    bossAppear: function() { playSeq([[100,0.15],[150,0.1],[100,0.15],[80,0.3]], 0.08); },
+    waveClear: function() { playSeq([[440,0.06],[554,0.06],[659,0.1]], 0.05); },
+
+    // 系统
+    levelUp: function() { playSeq([[523,0.06],[659,0.06],[784,0.06],[1047,0.06],[1319,0.15]], 0.05); },
+    achievement: function() { playSeq([[784,0.06],[988,0.06],[1175,0.06],[1568,0.15]], 0.05); },
+    getItem: function() { playSeq([[880,0.06],[1100,0.08]], 0.05); },
+    getRare: function() { playSeq([[660,0.05],[880,0.05],[1100,0.05],[1320,0.12]], 0.04); },
+    learnSkill: function() { playSeq([[440,0.06],[554,0.06],[659,0.06],[880,0.12]], 0.05); },
+    craft: function() { playSeq([[330,0.06],[440,0.06],[554,0.1]], 0.06); },
+    equip: function() { beep(440, 0.08); setTimeout(function(){ beep(554, 0.1); }, 60); },
+    buy: function() { beep(660, 0.06); setTimeout(function(){ beep(880, 0.06); }, 50); },
+    sell: function() { beep(440, 0.06); setTimeout(function(){ beep(330, 0.06); }, 50); },
+    error: function() { beep(150, 0.15, 'sawtooth', 0.5); },
+    save: function() { beep(523, 0.05); setTimeout(function(){ beep(659, 0.05); }, 40); },
+    click: function() { beep(800, 0.03, 'square', 0.3); },
+
+    // 旅行/场景
+    travel: function() { playSeq([[392,0.06],[440,0.06],[494,0.08]], 0.06); },
+    arrive: function() { beep(523, 0.06); setTimeout(function(){ beep(659, 0.1); }, 60); },
+    trap: function() { playSeq([[200,0.06],[150,0.08]], 0.04); },
+    rest: function() { playSeq([[392,0.1],[440,0.1],[494,0.15]], 0.1); },
+
+    // 剧情
+    storyChoice: function() { beep(440, 0.05); setTimeout(function(){ beep(554, 0.08); }, 40); },
+    questComplete: function() { playSeq([[523,0.06],[659,0.06],[784,0.1]], 0.05); },
+    newArea: function() { playSeq([[330,0.08],[440,0.08],[554,0.12]], 0.06); },
+
+    // 深渊
+    abyssEnter: function() { playSeq([[200,0.1],[150,0.1],[100,0.2]], 0.08); },
+    abyssBuff: function() { playSeq([[400,0.06],[500,0.06],[600,0.1]], 0.05); },
+  };
+
+  return {
+    play: function(name) {
+      if (SOUNDS[name] && !_muted && _enabled) {
+        try { SOUNDS[name](); } catch(e) {}
+      }
+    },
+    muted: function() { return _muted; },
+    toggleMute: function() {
+      _muted = !_muted;
+      try { localStorage.setItem('sfx_muted', _muted ? '1' : '0'); } catch(e) {}
+      return _muted;
+    },
+    setVol: function(v) { _vol = Math.max(0, Math.min(1, v)); try { localStorage.setItem('sfx_vol', _vol); } catch(e) {} },
+    vol: function() { return _vol; },
+    init: function() {
+      try {
+        var m = localStorage.getItem('sfx_muted');
+        if (m === '1') _muted = true;
+        var v = localStorage.getItem('sfx_vol');
+        if (v) _vol = Math.max(0, Math.min(1, parseFloat(v)));
+      } catch(e) {}
+    },
+    resume: function() { ctx(); } // 解锁AudioContext（需用户交互触发）
+  };
+})();
+
+SFX.init();
+
+// Global UI click SFX: buttons & choices
+(function() {
+  var _lastClick = 0;
+  document.addEventListener('click', function(ev) {
+    var t = ev.target;
+    if (!t) return;
+    var tag = (t.tagName || '').toLowerCase();
+  if (tag === 'button' || t.classList.contains('bld-clickable') || t.classList.contains('choice-btn') || tag === 'a') {
+      var now = Date.now();
+      if (now - _lastClick < 80) return; // debounce
+      _lastClick = now;
+      SFX.play('click');
+    }
+  });
+})();
+
 function render(html) { var el = document.getElementById('game'); if (el) el.innerHTML = html; }
 function toast(msg) { var el = document.getElementById('toast'); if (el) { el.textContent = msg; el.style.opacity = 1; setTimeout(function() { el.style.opacity = 0; }, 2000); } }
 
@@ -8174,6 +8318,7 @@ function travelTo(locId) {
     toast('🔒 尚未解锁');
     return;
   }
+  SFX.play('footstep');
   tickWeather();
   if (G.location === locId) {
     var _here = LOCATIONS[locId];
@@ -9254,6 +9399,8 @@ function startBattleWith(enemyOrArray, opts) {
   };
   G.inBattle = true;
   G._tookDamageThisBattle = false;
+  SFX.play(opts.isBoss ? 'bossAppear' : 'battleStart');
+  SFX.resume();
   G.selectedTarget = 0;
   G.attackMode = null;
   G._comboCount = 0;
@@ -9722,6 +9869,7 @@ function miniMapTreasure() {
   if (Math.random() < 0.15) {
     var eqDrop = generateRandomDrop(false);
     G.inventory.push(eqDrop);
+    SFX.play('itemGet');
     loot.push(eqDrop.rarityColor ? '<span style="color:' + eqDrop.rarityColor + '">' + eqDrop.name + '</span>' : eqDrop.name);
   }
   // 5% chance: regional clue (if available)
@@ -10294,6 +10442,7 @@ function playerAttack() {
     G._poisoned = Math.floor(G._poisoned * 0.7);
     if (G._poisoned < 1) G._poisoned = 0;
     b.log.push('🧪 你中毒了!受到 ' + ppDmg + ' 伤害');
+    SFX.play('poison');
     if (G.hp <= 0) { endBattle(); return; }
   }
   // === Player burn damage ===
@@ -10343,6 +10492,7 @@ function playerAttack() {
   }
   var target = b.enemies[targetIdx];
 
+  SFX.play('attack');
   var dmg = rand(Math.floor(calcAtk() * 0.8), Math.floor(calcAtk() * 1.2));
   if (b.warcry && b.warcry > 0) dmg = Math.floor(dmg * 1.2);
   // Apply temp buff
@@ -10355,7 +10505,7 @@ function playerAttack() {
   // Crit check
   var isCrit = G._nextCrit || (Math.random() * 100 < applyWeatherCrit(calcCrit(), G.location));
   G._nextCrit = false;
-  if (isCrit) dmg = Math.floor(dmg * (1 + calcCritDmg()));
+  if (isCrit) { dmg = Math.floor(dmg * (1 + calcCritDmg())); SFX.play('crit'); }
 
   // Deadly strike check (装备deadlyRate)
   var totalDeadly = 0;
@@ -10365,7 +10515,7 @@ function playerAttack() {
     if (dItem && dItem.deadlyRate) totalDeadly += dItem.deadlyRate;
   }
   var isDeadly = Math.random() < totalDeadly;
-  if (isDeadly) dmg = Math.floor(dmg * 2.5);
+  if (isDeadly) { dmg = Math.floor(dmg * 2.5); SFX.play('crit'); }
 
   // Apply weather modifier to damage
   dmg = applyWeatherToDamage(dmg, false, G.location);
@@ -10517,6 +10667,7 @@ function playerAttack() {
 function useOriginSkill() {
   var o = G.origin;
   if (!o || !o.skill) return;
+  SFX.play('originSkill');
 
   if (o.id === 'warrior') {
     G.battle.warcry = 3;
@@ -10546,6 +10697,7 @@ function useOriginSkill() {
 function playerSkill(sid) {
   var sk = SKILLS.find(function(s) { return s.id === sid; });
   if (!sk) return;
+  SFX.play('skill');
   // D1: Cooldown check
   if (!G._skillCooldowns) G._skillCooldowns = {};
   if (G._skillCooldowns[sid] && G._skillCooldowns[sid] > 0) {
@@ -10789,6 +10941,7 @@ function _battleDelay(base) {
 function doDefend() {
   var b = G.battle;
   if (!b) return;
+  SFX.play('defend');
   b.defending = true;
   b.log.push('🛡️ 你举起防御!本回合受到的伤害减半');
   // Small HP regen when defending
@@ -10806,6 +10959,7 @@ function doDefend() {
 }
 
 function fleeBattle() {
+  SFX.play('flee');
   tryFlee();
 }
 
@@ -11045,6 +11199,7 @@ function enemyTurn() {
 function _enemyUseSkill(e, skillId, b, sb, eqKeys) {
   var es = ENEMY_SKILLS[skillId];
   if (!es) return false;
+  SFX.play('enemySkill');
 
   // HP threshold check (some skills only used when low HP)
   if (es.hpBelow && e.curHp > e.hp * es.hpBelow) return false;
@@ -11060,7 +11215,7 @@ function _enemyUseSkill(e, skillId, b, sb, eqKeys) {
         if (b.shield >= pdmg) { b.shield -= pdmg; pdmg = 0; }
         else { pdmg -= b.shield; b.shield = 0; }
       }
-      if (pdmg > 0) { G.hp = Math.max(0, G.hp - pdmg); flashPlayerStatus('#ef4444'); }
+      if (pdmg > 0) { G.hp = Math.max(0, G.hp - pdmg); flashPlayerStatus('#ef4444'); SFX.play('enemyHit'); }
       b.log.push((es.emoji||'💪') + ' ' + e.name + ' ' + (es.name||'猛击') + '!造成 <span class="dmg-player">' + pdmg + '</span> 伤害');
       showBattleEffect(es.effect || 'slash');
       return true;
@@ -13177,6 +13332,7 @@ function endBattle() {
   if (b && b.waves && b.wave < b.totalWaves - 1) {
     G.inBattle = false;
     if (G._autoBattle) stopAutoBattle();
+    SFX.play('waveClear');
     
     // Partial rewards for current wave (gold + XP only, no full drops)
     var partialXp = 0;
@@ -13466,6 +13622,7 @@ function endBattle() {
 
   var html = '';
   html += '<div class="scene-title result-anim">战斗胜利</div>';
+  SFX.play('battleWin');
   html += '<div class="victory-rewards">';
   html += '<div>⭐ ' + totalXp + ' 经验值</div>';
   // D1: Battle stats summary
@@ -13549,6 +13706,7 @@ function doLevelUp() {
   G.hp = G.maxHp;
   G.maxMp = calcMaxMp();
   G.mp = G.maxMp;
+  SFX.play('levelUp');
   // Story trigger: check level objectives
   checkStoryTriggers('reach_level', G.level);
   checkAchievements();
@@ -13556,6 +13714,7 @@ function doLevelUp() {
 
 function sceneDeath() {
   G.totalBattlesLost++;
+  SFX.play('death');
   var lossGold = Math.floor(G.gold * 0.1);
   var lossXp = Math.floor(G.xp * 0.2);
   G.gold -= lossGold;
@@ -15013,6 +15172,7 @@ function learnSkill(skillId, cost) {
   G.skills.push(skillId);
   var sk = SKILLS.find(function(s) { return s.id === skillId; });
   toast('📖 学会了 ' + (sk ? sk.emoji + sk.name : skillId) + '!');
+  SFX.play('learnSkill');
   updateStatus();
   sceneTraining();
 }
