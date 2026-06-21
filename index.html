@@ -38,7 +38,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Georgia', 'Songti SC', 'STSong', serif;
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1709,42 +1709,46 @@ body {
   .bld-right { display: none; }
   .bld-info { align-items: center; }
 
-  /* Battle: stack enemies vertically */
+  /* Battle: stack enemies vertically + compact layout */
   .battle-enemies { flex-direction: column; gap: 6px; align-items: stretch; }
   .enemy-card {
     min-width: auto !important;
     width: 100%;
-    padding: 8px 10px;
-    gap: 8px;
+    padding: 6px 8px;
+    gap: 6px;
     text-align: left;
     border-width: 1px;
   }
-  .enemy-card .enemy-emoji { font-size: 24px; }
-  .enemy-card .enemy-name { font-size: 13px; }
-  .enemy-card .enemy-hp-text { font-size: 11px; }
+  .enemy-card .enemy-emoji { font-size: 22px; }
+  .enemy-card .enemy-name { font-size: 12px; }
+  .enemy-card .enemy-hp-text { font-size: 10px; }
+  .enemy-card .enemy-intent { font-size: 10px; }
+  .enemy-hp-bar { height: 4px; }
   .battle-boss-frame { padding: 4px; }
 
   /* Battle player panel */
-  .battle-player { padding: 8px; }
-  .player-name { font-size: 13px; }
-  .player-bars { gap: 3px; }
+  .battle-player { padding: 6px; margin: 4px 0; }
+  .player-name { font-size: 12px; }
+  .player-bars { gap: 2px; }
+  .player-hp-bar, .player-mp-bar { height: 8px; }
+  .player-status-bar { font-size: 10px; gap: 4px; }
   .player-bar-row { font-size: 11px; gap: 4px; }
   .player-stats-inline { font-size: 11px; }
   .status-icon { font-size: 10px; padding: 1px 4px; }
 
-  /* Battle actions */
+  /* Battle actions - compact sticky bottom */
   .battle-actions {
     position: sticky;
     bottom: 0;
     background: linear-gradient(0deg, var(--bg) 70%, transparent);
-    padding: 8px 0 12px;
+    padding: 4px 0 8px;
     margin: 0 -8px;
-    gap: 6px;
+    gap: 4px;
   }
   .battle-actions .btn {
-    min-height: 48px;
-    min-width: 56px;
-    font-size: 13px;
+    min-height: 40px;
+    min-width: 44px;
+    font-size: 12px;
     flex: 1 1 calc(25% - 8px);
     margin: 2px;
     padding: 6px 4px;
@@ -1757,8 +1761,8 @@ body {
   }
 
   /* Battle log */
-  .battle-log { max-height: 90px; font-size: 11px; padding: 6px; margin: 6px 0; }
-  .battle-turn-counter { font-size: 11px; padding: 3px 6px; }
+  .battle-log { max-height: 70px; font-size: 10px; padding: 4px; margin: 4px 0; }
+  .battle-turn-counter { font-size: 10px; padding: 2px 4px; }
 
   /* Wave intermission */
   .wave-status { padding: 8px; margin: 8px 0; }
@@ -1782,7 +1786,7 @@ body {
   .map-actions .btn { flex: 1 1 calc(50% - 8px); }
 
   /* Mini map */
-  .mini-map-grid { height: 260px !important; }
+  .mini-map-grid { height: 200px !important; }
   .mini-area { padding: 8px; }
   .mini-area-name { font-size: 14px; }
   .mini-area-desc { font-size: 12px; }
@@ -1946,6 +1950,41 @@ body {
   .mobile-nav .nav-label { font-size: 8px; }
 }
 
+
+/* === Minimap fixed 4-zone layout === */
+body.mm-layout { overflow: hidden; padding-bottom: 0 !important; }
+body.mm-layout #game { flex:1; display:flex; flex-direction:column; padding:0; overflow:hidden; max-height:100dvh; }
+body.mm-layout #status { position:relative; top:auto; z-index:200; font-size:11px; padding:4px 8px; background:#111; border-bottom:1px solid #2a2a2a; flex:0 0 auto; }
+body.mm-layout .mobile-nav { display:flex!important; position:relative; bottom:auto; flex:0 0 auto; background:#111; border-top:1px solid #2a2a2a; padding-bottom:env(safe-area-inset-bottom,0px); }
+.mm-zone-map { flex:1 1 auto; display:flex; flex-direction:column; min-height:0; padding:4px 8px 0; overflow:hidden; }
+.mm-zone-ctrl { flex:0 0 auto; display:flex; flex-direction:row; align-items:stretch; gap:8px; padding:6px 8px; background:#111; border-top:1px solid #2a2a2a; min-height:110px; }
+.mm-header { display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:12px; margin-bottom:2px; flex:0 0 auto; }
+.mm-title { font-weight:bold; color:var(--accent); font-size:13px; }
+.mm-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; color:#aaa; font-size:11px; }
+.mm-weather { color:#88ccff; }
+.mm-radar-item { color:var(--text); cursor:pointer; }
+.mm-path-hint { color:#d4a017; cursor:pointer; }
+.mm-room { font-size:12px; color:var(--text); margin-bottom:4px; flex:0 0 auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mm-map-flex { flex:1 1 auto; min-height:0; height:auto!important; }
+.mm-dpad { flex:0 0 110px; display:flex; flex-direction:column; justify-content:center; gap:4px; }
+.mm-dpad-row { display:flex; justify-content:center; align-items:center; gap:4px; }
+.mm-dbtn { width:36px; height:36px; border:1px solid #555; background:#222; color:var(--text); border-radius:6px; font-size:16px; display:flex; align-items:center; justify-content:center; padding:0; }
+.mm-dbtn:disabled { opacity:0.25; }
+.mm-dbtn:active:not(:disabled) { background:var(--accent); color:#000; }
+.mm-dpad-dot { width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:14px; }
+.mm-acts { flex:1 1 auto; display:grid; grid-template-columns:repeat(3,1fr); gap:4px; align-content:center; }
+.mm-abtn { border:1px solid #444; background:#1a1a1a; color:var(--text); border-radius:6px; font-size:11px; padding:4px 2px; min-height:36px; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.1; }
+.mm-abtn-pri { border-color:var(--accent); color:var(--accent); }
+.mm-abtn-dng { border-color:#c0392b; color:#e74c3c; }
+.mm-abtn:active { background:var(--accent); color:#000; }
+.mobile-nav.mm-nav-5 .nav-item { flex:1 1 20%; }
+
+/* Battle menu - Xianjian style */
+.btl-menu { flex-wrap: wrap; gap: 6px; justify-content: center; }
+.btn-defend { background: linear-gradient(135deg,#37474f,#263238); color: #90caf9; }
+.btn-item { background: linear-gradient(135deg,#4a2a1a,#3a1a0a); color: #ffb74d; }
+.btn-defend:active { background: var(--accent); color: #000; }
+.btn-item:active { background: var(--accent); color: #000; }
 </style>
 </head>
 <body>
@@ -2113,7 +2152,7 @@ function showGiftPanel(sceneType) {
   var loc = G.currentLocation || 'whitecity';
   if (sceneType === 'inn') {
     var innNpcMap = {
-      whitecity:['innkeep_white','roland','elena','lord_white'],
+      whitecity:['innkeep_white','elena','lord_white'],
       ironridge:['innkeep_iron','hank','smithkeep_iron','lord_iron'],
       tidport:['innkeep_tid','captain_storm','lord_tid'],
       sunspire:['innkeep_sun','sage_ilan','lord_sun'],
@@ -2130,7 +2169,7 @@ function showGiftPanel(sceneType) {
     npcList = innNpcMap[loc] || [];
   } else if (sceneType === 'blacksmith') {
     var smithNpcMap = {
-      whitecity:['roland','hank'],
+      whitecity:['hank'],
       ironridge:['smithkeep_iron','hank'],
       dragonreach:['smithkeep_drag'],
       icereef:['smithkeep_ice']
@@ -2138,7 +2177,7 @@ function showGiftPanel(sceneType) {
     npcList = smithNpcMap[loc] || [];
   } else if (sceneType === 'shop') {
     var shopNpcMap = {
-      whitecity:['shopkeep_white','elena','roland'],
+      whitecity:['shopkeep_white','elena'],
       ironridge:['smithkeep_iron'],
       tidport:['mystic_wu','innkeep_tid'],
       sunspire:['sage_ilan','innkeep_sun'],
@@ -3688,8 +3727,8 @@ var CHAPTER_UNLOCKS = {
   'ch1_lake_mystery': [],
   'ch1_lake_explore': [],
   'ch1_boss_pre': ['darkforest'],
-  'ch2_forest_warning': [],
-  'ch2_fortress_discovery': ['fortress'],
+  'ch2_forest_warning': ['fortress'],
+  'ch2_fortress_discovery': [],
   'ch2_fortress_boss': ['mine'],
   'ch3_mine_entrance': ['ironridge'],
   'ch3_mine_explore': [],
@@ -8630,6 +8669,7 @@ function _confirmTravel(locId) {
 // ═══════════════════════════════════════════════════════════
 
 function leaveMiniMap() {
+  _leaveMiniMapLayout();
   // Reset boss defeated status for this location when leaving
   var loc = LOCATIONS[G.location];
   if (loc) {
@@ -8641,8 +8681,6 @@ function leaveMiniMap() {
     }
   }
   G.miniMapPos = null;
-  // Return to the nearest town instead of world map
-  // (sceneWorldMap would auto-redirect back to miniMap for non-town locations, creating a loop)
   // Find nearest connected town
   var _nearestTown = 'whitecity';
   var _conns = LOC_CONNECTIONS[G.location] || [];
@@ -8650,11 +8688,39 @@ function leaveMiniMap() {
     var _cl = LOCATIONS[_conns[_ci]];
     if (_cl && _cl.type === 'town') { _nearestTown = _conns[_ci]; break; }
   }
-  G.location = _nearestTown;
-  sceneTown();
+  // If already in a town, just return
+  if (loc && loc.type === 'town') {
+    sceneTown();
+    return;
+  }
+  // In the wild: check for teleport scroll first
+  var scrollIdx = -1;
+  for (var si = 0; si < G.inventory.length; si++) {
+    if (G.inventory[si] && G.inventory[si].useType === 'teleport') { scrollIdx = si; break; }
+  }
+  if (scrollIdx >= 0) {
+    // Use teleport scroll - show destination picker
+    useTeleportScroll(scrollIdx);
+  } else {
+    // Walk back - may encounter enemies, but free
+    toast('🚶 步行返回 ' + LOCATIONS[_nearestTown].name + '...');
+    G.location = _nearestTown;
+    // Random encounter chance on the way back
+    if (Math.random() < 0.3) {
+      var retEnemies = loc.enemies || ['goblin'];
+      var eId = retEnemies[rand(0, retEnemies.length - 1)];
+      var eData = ENEMIES[eId] || ENEMIES['goblin'];
+      var eCopy = Object.assign({}, eData);
+      if (eCopy.hp) eCopy.curHp = eCopy.hp;
+      startBattleWith([eCopy], { msg: '返回途中遭遇敌人!' });
+    } else {
+      sceneTown();
+    }
+  }
 }
 
 function _goWorldMapFromMiniMap() {
+  _leaveMiniMapLayout();
   // Go to world map from mini-map (user explicitly requested)
   // Set a flag so sceneWorldMap doesn't auto-redirect back
   G._skipAutoRedirect = true;
@@ -8726,6 +8792,10 @@ function enterMiniMap() {
     toast('这里没有可探索的区域');
     return;
   }
+  // Warn if HP is low before entering dangerous area
+  if (G.hp < G.maxHp * 0.5) {
+    toast('⚠️ HP不足50%!建议先去旅店休息');
+  }
   var map = getMapForLocation();
   G.miniMapPos = { r: map.startR, c: map.startC };
   // Mark start as visited
@@ -8746,17 +8816,12 @@ function enterMiniMap() {
 function renderMiniMap(msg) {
   var map = getMapForLocation();
   var room = map.rooms[G.miniMapPos.r][G.miniMapPos.c];
-
-  // Reveal adjacent rooms
   var dirs = [{dr:-1,dc:0},{dr:1,dc:0},{dr:0,dc:-1},{dr:0,dc:1}];
   for (var di = 0; di < dirs.length; di++) {
     var nr = G.miniMapPos.r + dirs[di].dr, nc = G.miniMapPos.c + dirs[di].dc;
     var adjRoom = getRoom(map, nr, nc);
     if (adjRoom) adjRoom.revealed = true;
   }
-
-  var html = '';
-  // Calculate exploration percentage
   var totalPassable = 0, totalVisited = 0;
   for (var er = 0; er < map.rooms.length; er++) {
     for (var ec = 0; ec < map.rooms[er].length; ec++) {
@@ -8772,19 +8837,14 @@ function renderMiniMap(msg) {
     toast('📐 完全探索: ' + LOCATIONS[G.location].name + '!');
     checkAchievements();
   }
-
-  ﻿// === D2: Weather bar ===
   var wHtml = '';
   var w = G._weather;
   if (w && WEATHER_TYPES[w]) {
     var wt = WEATHER_TYPES[w];
-    wHtml = '<div class="mini-weather-bar">' + wt.emoji + ' ' + wt.name;
-    if (wt.enemyAtkMod && wt.enemyAtkMod !== 1) wHtml += ' <span style="color:' + (wt.enemyAtkMod > 1 ? '#e74c3c' : '#2ecc71') + '">敌攻' + (wt.enemyAtkMod > 1 ? '↑' : '↓') + '</span>';
-    if (wt.travelMod && wt.travelMod !== 1) wHtml += ' <span style="color:#e67e22">旅行' + (wt.travelMod > 1 ? '慢' : '快') + '</span>';
-    wHtml += '</div>';
+    wHtml = '<span class="mm-weather">' + wt.emoji + ' ' + wt.name;
+    if (wt.enemyAtkMod && wt.enemyAtkMod !== 1) wHtml += (wt.enemyAtkMod > 1 ? ' 🔴' : ' 🟢');
+    wHtml += '</span>';
   }
-
-  // === D2: Mini radar — nearby POIs ===
   var radarHtml = '';
   var radarItems = [];
   var dirs8 = [{dr:-1,dc:0,dir:'北'},{dr:1,dc:0,dir:'南'},{dr:0,dc:-1,dir:'西'},{dr:0,dc:1,dir:'东'},{dr:-1,dc:-1,dir:'西北'},{dr:-1,dc:1,dir:'东北'},{dr:1,dc:-1,dir:'西南'},{dr:1,dc:1,dir:'东南'}];
@@ -8798,137 +8858,72 @@ function renderMiniMap(msg) {
       else if (adjR.type === 'event') poiIcon = '🔍';
       else if (adjR.type === 'trap') poiIcon = '⚠️';
       else if (adjR.type === 'stone') poiIcon = '🪨';
-      if (poiIcon) radarItems.push({ dir: dirs8[ri].dir, icon: poiIcon, type: adjR.type, r: G.miniMapPos.r + dirs8[ri].dr, c: G.miniMapPos.c + dirs8[ri].dc });
+      if (poiIcon) radarItems.push({ dir: dirs8[ri].dir, icon: poiIcon, r: G.miniMapPos.r + dirs8[ri].dr, c: G.miniMapPos.c + dirs8[ri].dc });
     }
   }
   if (radarItems.length > 0) {
-    radarHtml = '<div class="mini-radar">🔭 ';
+    radarHtml = '<span class="mm-radar">🔭 ';
     for (var rj = 0; rj < radarItems.length; rj++) {
       var isAdj = (Math.abs(radarItems[rj].r - G.miniMapPos.r) + Math.abs(radarItems[rj].c - G.miniMapPos.c)) === 1;
-      radarHtml += '<span class="mini-radar-item"' + (isAdj ? ' onclick="clickGridCell(' + radarItems[rj].r + ',' + radarItems[rj].c + ')"' : '') + '><span class="dir">' + radarItems[rj].dir + '</span> ' + radarItems[rj].icon + '</span>';
+      radarHtml += '<span class="mm-radar-item"' + (isAdj ? ' onclick="clickGridCell(' + radarItems[rj].r + ',' + radarItems[rj].c + ')"' : '') + '>' + radarItems[rj].dir + radarItems[rj].icon + '</span> ';
     }
-    radarHtml += '</div>';
+    radarHtml += '</span>';
   }
-
-  // === D2: Path hints to nearest unvisited special room ===
   var pathHintHtml = '';
   var _nearestSpecial = _findNearestSpecialRoom(map, G.miniMapPos.r, G.miniMapPos.c);
   if (_nearestSpecial) {
     var _hintDir = _nearestSpecial.firstDir;
-    var _hintIcon = _nearestSpecial.icon;
-    var _hintDist = _nearestSpecial.dist;
-    var _hintType = _nearestSpecial.typeLabel;
-    pathHintHtml = '<div class="mini-path-hint" onclick="moveGrid(\'' + (_hintDir.dr > 0 ? '1' : _hintDir.dr < 0 ? '-1' : '0') + '\',\'' + (_hintDir.dc > 0 ? '1' : _hintDir.dc < 0 ? '-1' : '0') + '\')">';
-    pathHintHtml += '<span class="arrow">➤</span> ' + _hintIcon + ' ' + _hintType + ' 距离' + _hintDist + '步 → 向' + (_hintDir.dr < 0 ? '北' : _hintDir.dr > 0 ? '南' : '') + (_hintDir.dc < 0 ? '西' : _hintDir.dc > 0 ? '东' : '') + '前进';
-    pathHintHtml += '</div>';
+    var dirName = (_hintDir.dr < 0 ? '北' : _hintDir.dr > 0 ? '南' : '') + (_hintDir.dc < 0 ? '西' : _hintDir.dc > 0 ? '东' : '');
+    pathHintHtml = '<span class="mm-path-hint" onclick="moveGrid(\'' + (_hintDir.dr > 0 ? '1' : _hintDir.dr < 0 ? '-1' : '0') + '\',\'' + (_hintDir.dc > 0 ? '1' : _hintDir.dc < 0 ? '-1' : '0') + '\')">➤' + _nearestSpecial.icon + _nearestSpecial.dist + '步' + dirName + '</span>';
   }
-
-  // === D2: Map legend (collapsible) ===
-  var legendHtml = '<details style="margin:4px 0"><summary style="color:#666;font-size:0.8em;cursor:pointer">🗺️ 图例</summary>';
-  legendHtml += '<div class="map-legend">';
-  legendHtml += '<span class="map-legend-item">🚪入口</span>';
-  legendHtml += '<span class="map-legend-item">⚔️敌人</span>';
-  legendHtml += '<span class="map-legend-item">👑Boss</span>';
-  legendHtml += '<span class="map-legend-item">💀精锐</span>';
-  legendHtml += '<span class="map-legend-item">📦宝箱</span>';
-  legendHtml += '<span class="map-legend-item">🔍事件</span>';
-  legendHtml += '<span class="map-legend-item">⚠️陷阱</span>';
-  legendHtml += '<span class="map-legend-item">🪨石堆</span>';
-  legendHtml += '<span class="map-legend-item">💧水域</span>';
-  legendHtml += '<span class="map-legend-item" style="color:#d4a017">● 你</span>';
-  legendHtml += '</div></details>';
-
-  html += '<div class="scene-title">' + map.name + ' <span style="font-size:0.7em;color:#888">🔍 ' + explorePct + '%</span></div>';
-  if (msg) html += '<div class="mini-msg">' + msg + '</div>';
-
-  ﻿// === D2: Show weather + radar + path hint ===
-  html += wHtml;
-  html += radarHtml;
-  html += pathHintHtml;
-
-  // Current room info
-  var typeLabel = '';
-  var typeHint = '';
-  if (room.type === 'boss') { typeLabel = ' 👑'; typeHint = '危险区域'; }
-  else if (room.type === 'elite') { typeLabel = ' 💀'; typeHint = '精锐敌人盘踞此处'; }
-  else if (room.type === 'treasure') { typeLabel = ' 📦'; typeHint = '有宝藏'; }
-  else if (room.type === 'enemy') { typeLabel = ' ⚔️'; typeHint = '有敌人出没'; }
-  else if (room.type === 'trap') { typeLabel = ' ⚠️'; typeHint = '有陷阱!'; }
-  else if (room.type === 'event') { typeLabel = ' 🔍'; typeHint = '可以调查'; }
-  else if (room.type === 'water') { typeLabel = ' 💧'; typeHint = '水域,无法通行'; }
-  else if (room.type === 'start') { typeLabel = ' 🚪'; typeHint = '入口'; }
-  else if (room.type === 'wall') { typeLabel = ''; typeHint = ''; }
-  html += '<div class="mini-area">';
-  html += '<div class="mini-area-name">' + typeLabel + ' ' + room.name + '</div>';
-  html += '<div class="mini-area-desc">' + room.desc + (typeHint ? '<br><span style="color:#888;font-size:0.85em">' + typeHint + '</span>' : '') + '</div>';
+  var typeLabel = '', typeHint = '';
+  if (room.type === 'boss') { typeLabel = '👑'; typeHint = '危险'; }
+  else if (room.type === 'elite') { typeLabel = '💀'; typeHint = '精锐'; }
+  else if (room.type === 'treasure') { typeLabel = '📦'; typeHint = '宝藏'; }
+  else if (room.type === 'enemy') { typeLabel = '⚔️'; typeHint = '敌人'; }
+  else if (room.type === 'trap') { typeLabel = '⚠️'; typeHint = '陷阱'; }
+  else if (room.type === 'event') { typeLabel = '🔍'; typeHint = '事件'; }
+  else if (room.type === 'start') { typeLabel = '🚪'; typeHint = '入口'; }
+  else if (room.type === 'stone') { typeLabel = '🪨'; typeHint = '石堆'; }
+  // ═══ 四区域固定布局 ═══
+  var html = '';
+  // ③ 地图区域
+  html += '<div class="mm-zone-map">';
+  html += '<div class="mm-header">';
+  html += '<span class="mm-title">' + map.name + ' 🔍' + explorePct + '%</span>';
+  html += '<span class="mm-meta">' + wHtml + radarHtml + pathHintHtml + '</span>';
   html += '</div>';
-
-  // Grid mini map - camera-follow viewport
-  html += '<div id="mapViewport" class="mini-map-grid" style="overflow:hidden;-webkit-overflow-scrolling:touch;height:320px;position:relative;border:1px solid #333;border-radius:8px;background:#0a0a0a">';
-  html += '<div id="mapLayer" style="position:absolute;will-change:transform;transition:transform 0.18s ease-out">';
-  html += renderGridMap(map, G.miniMapPos.r, G.miniMapPos.c);
+  if (typeLabel) html += '<div class="mm-room">' + typeLabel + ' ' + room.name + ' <span style="color:#888;font-size:0.8em">' + typeHint + '</span></div>';
+  html += '<div id="mapViewport" class="mini-map-grid mm-map-flex" style="overflow:hidden;-webkit-overflow-scrolling:touch;position:relative;border:1px solid #333;border-radius:6px;background:#0a0a0a">' +
+          '<div id="mapLayer" style="position:absolute;will-change:transform;transition:transform 0.18s ease-out">' +
+          renderGridMap(map, G.miniMapPos.r, G.miniMapPos.c) +
+          '</div></div>';
   html += '</div>';
-  html += '</div>';
-
-  // Direction buttons (N/S/E/W) + Room actions
-  html += '<div class="mini-controls">';
-
-  // Movement buttons - 3x3 grid layout
-  html += '<div class="move-grid">';
+  // ② 控制区域
+  html += '<div class="mm-zone-ctrl">';
   var canN = canMove(map, G.miniMapPos.r - 1, G.miniMapPos.c);
   var canS = canMove(map, G.miniMapPos.r + 1, G.miniMapPos.c);
   var canW = canMove(map, G.miniMapPos.r, G.miniMapPos.c - 1);
   var canE = canMove(map, G.miniMapPos.r, G.miniMapPos.c + 1);
-  html += '<div></div>';
-  html += '<button class="move-btn" onclick="moveGrid(\'-1\',\'0\')" ' + (canN ? '' : 'disabled') + '>⬆️ 北</button>';
-  html += '<div></div>';
-  html += '<button class="move-btn" onclick="moveGrid(\'0\',\'-1\')" ' + (canW ? '' : 'disabled') + '>⬅️ 西</button>';
-  html += '<div class="move-center">●</div>';
-  html += '<button class="move-btn" onclick="moveGrid(\'0\',\'1\')" ' + (canE ? '' : 'disabled') + '>➡️ 东</button>';
-  html += '<div></div>';
-  html += '<button class="move-btn" onclick="moveGrid(\'1\',\'0\')" ' + (canS ? '' : 'disabled') + '>⬇️ 南</button>';
-  html += '<div></div>';
-  html += '</div>';
-
-  // Room-specific actions
-  html += '<div class="mini-actions">';
-  // Enemies auto-trigger on step - no search button needed
-  if (room.type === 'treasure') {
-    html += '<button class="btn btn-primary" onclick="miniMapTreasure()">📦 搜索宝藏</button>';
-  } else if (room.type === 'boss') {
-    html += '<button class="btn btn-danger" onclick="miniMapBoss()">👑 挑战首领</button>';
-  } else if (room.type === 'elite') {
-    html += '<button class="btn btn-danger" onclick="miniMapElite()">💀 挑战精锐</button>';
-  } else if (room.type === 'trap') {
-    if (G.origin && G.origin.id === 'hunter') {
-      html += '<button class="btn" onclick="miniMapTrap()">🕸️ 拆除陷阱(安全)</button>';
-    } else {
-      html += '<button class="btn btn-danger" onclick="miniMapTrap()">⚠️ 尝试拆除陷阱</button>';
-    }
-  } else if (room.type === 'event') {
-    html += '<button class="btn" onclick="miniMapEvent()">🔍 调查</button>';
-  } else if (room.type === 'grass' || room.type === 'plain') {
-    var _loc4 = LOCATIONS[G.location];
-    html += '<button class="btn" onclick="miniMapLookAround()">🌿 观察四周</button>';
-  } else if (room.type === 'stone') {
-    html += '<button class="btn" onclick="miniMapStone()">🪨 调查石堆</button>';
-  }
-  html += '<button class="btn" onclick="miniMapLookAround()">🌿 观察四周</button>';
-  html += '<button class="btn" onclick="_toggleMapMarker()">📌 标记</button>';
-  html += '<button class="btn" onclick="leaveMiniMap()">🏰 返回城镇</button>';
-  html += '<button class="btn" onclick="_goWorldMapFromMiniMap()">🗺️ 世界地图</button>';
-  html += '<button class="btn" onclick="sceneInventoryFromExplore()">🎒 背包</button>';
-  html += '<button class="btn" onclick="sceneEquipmentFromExplore()">⚔️ 装备</button>';  html += '<button class="btn" onclick="_showStatusFromExplore()">👤 状态</button>';
-  html += '<button class="btn" onclick="_showQuestsFromExplore()">📜 任务</button>';
-  html += '</div>';
-
-  // === D2: Legend ===
-  html += legendHtml;
-
-  html += '</div>';
+  html += '<div class="mm-dpad">' +
+          '<div class="mm-dpad-row"><div></div><button class="mm-dbtn" onclick="moveGrid(\'-1\',\'0\')" ' + (canN ? '' : 'disabled') + '>⬆</button><div></div></div>' +
+          '<div class="mm-dpad-row"><button class="mm-dbtn" onclick="moveGrid(\'0\',\'-1\')" ' + (canW ? '' : 'disabled') + '>⬅</button><div class="mm-dpad-dot">●</div><button class="mm-dbtn" onclick="moveGrid(\'0\',\'1\')" ' + (canE ? '' : 'disabled') + '>➡</button></div>' +
+          '<div class="mm-dpad-row"><div></div><button class="mm-dbtn" onclick="moveGrid(\'1\',\'0\')" ' + (canS ? '' : 'disabled') + '>⬇</button><div></div></div>' +
+          '</div>';
+  html += '<div class="mm-acts">';
+  if (room.type === 'treasure') html += '<button class="mm-abtn mm-abtn-pri" onclick="miniMapTreasure()">📦搜索</button>';
+  else if (room.type === 'boss') html += '<button class="mm-abtn mm-abtn-dng" onclick="miniMapBoss()">👑挑战</button>';
+  else if (room.type === 'elite') html += '<button class="mm-abtn mm-abtn-dng" onclick="miniMapElite()">💀精锐</button>';
+  else if (room.type === 'trap') html += '<button class="mm-abtn mm-abtn-dng" onclick="miniMapTrap()">⚠️拆除</button>';
+  else if (room.type === 'event') html += '<button class="mm-abtn" onclick="miniMapEvent()">🔍调查</button>';
+  else if (room.type === 'stone') html += '<button class="mm-abtn" onclick="miniMapStone()">🪨石堆</button>';
+  else html += '<button class="mm-abtn" onclick="miniMapLookAround()">🌿观察</button>';
+  html += '<button class="mm-abtn" onclick="leaveMiniMap()">🏰回城</button>';
+  html += '<button class="mm-abtn" onclick="_goWorldMapFromMiniMap()">🗺️地图</button>';
+  html += '</div></div>';
   render(html);
-  // Camera-follow: center map on player position
-  // On first entry (no _prevMapPos), snap instantly; on moves, animate
+  document.body.classList.add('mm-layout');
+  _setMiniMapNav();
   if (G._prevMapPos && (G._prevMapPos.r !== G.miniMapPos.r || G._prevMapPos.c !== G.miniMapPos.c)) {
     centerMapOnPlayerAnimated();
   } else {
@@ -8937,10 +8932,35 @@ function renderMiniMap(msg) {
   }
 }
 
+
+function _setMiniMapNav() {
+  var nav = document.getElementById('mobileNav');
+  if (!nav) return;
+  nav.classList.add('mm-nav-5');
+  nav.innerHTML = '<div class="nav-item" onclick="_showStatusFromExplore()"><span class="nav-emoji">👤</span><span class="nav-label">状态</span></div>' +
+    '<div class="nav-item" onclick="sceneInventoryFromExplore()"><span class="nav-emoji">🎒</span><span class="nav-label">背包</span></div>' +
+    '<div class="nav-item" onclick="sceneEquipmentFromExplore()"><span class="nav-emoji">⚔️</span><span class="nav-label">装备</span></div>' +
+    '<div class="nav-item" onclick="_showQuestsFromExplore()"><span class="nav-emoji">📜</span><span class="nav-label">任务</span></div>' +
+    '<div class="nav-item" onclick="sceneSaveLoad()"><span class="nav-emoji">💾</span><span class="nav-label">存档</span></div>';
+}
+
+function _leaveMiniMapLayout() {
+  document.body.classList.remove('mm-layout');
+  var nav = document.getElementById('mobileNav');
+  if (nav) {
+    nav.classList.remove('mm-nav-5');
+    nav.innerHTML = '<div class="nav-item" onclick="sceneTown()"><span class="nav-emoji">🏰</span><span class="nav-label">城镇</span></div>' +
+      '<div class="nav-item" onclick="sceneInventory()"><span class="nav-emoji">🎒</span><span class="nav-label">背包</span></div>' +
+      '<div class="nav-item" onclick="_playerInfoReturnTo=G._currentScene||\'sceneTown\';scenePlayerInfo()"><span class="nav-emoji">👤</span><span class="nav-label">角色</span></div>' +
+      '<div class="nav-item" onclick="sceneEquipmentFromTown()"><span class="nav-emoji">⚔️</span><span class="nav-label">装备</span></div>' +
+      '<div class="nav-item" onclick="sceneSaveLoad()"><span class="nav-emoji">💾</span><span class="nav-label">存档</span></div>';
+  }
+}
+
 function renderGridMap(map, curR, curC) {
   var cols = map.cols;
   var rows = map.rows;
-  var cellSize = 52; // P0-3: larger cells for touch/mobile
+  var cellSize = 36; // Compact cells for 4-zone layout
   var gap = 2;
 
   var totalW = cols * (cellSize + gap);
@@ -10396,73 +10416,166 @@ function renderBattle(msg) {
   html += '<div id="battleEffect" class="battle-effect-layer" style="display:none"></div>';
 
   // === ACTION BUTTONS ===
-  html += '<div class="battle-actions">';
-  html += '<button class="btn btn-atk" onclick="G._battleAction=\'attack\';toast(\'⚔️ 选择攻击目标\')">⚔️ 攻击</button>';
-  // D1: Quick attack - auto-selects next alive enemy and attacks
-  html += '<button class="btn btn-atk" style="font-size:0.85em" onclick="quickAttack()">⚔️⚡</button>';
+  // 仙剑式战斗菜单: 攻/术/物/防/逃
+  html += '<div class="battle-actions btl-menu">';
 
-  if (G.origin && G.origin.skill && G.origin.skill.type !== '被动') {
-    html += '<button class="btn btn-skill" id="btn_skill" onclick="useOriginSkill()">' + G.origin.skill.emoji + ' ' + G.origin.skill.name + '</button>';
-  }
+  // 攻击
+  html += '<button class="btn btn-atk" onclick="G._battleAction=\'attack\';toast(\'⚔️ 选择攻击目标\')">⚔️ 攻</button>';
 
-  // Q21: Skills shown as expandable groups
-  if (G.skills && G.skills.length > 0) {
-    var spells = [];
-    var combatSkills = [];
-    for (var si = 0; si < G.skills.length; si++) {
-      var sk = SKILLS.find(function(s) { return s.id === G.skills[si]; });
-      if (sk) {
-        if (sk.category === 'spell') spells.push(sk);
-        else combatSkills.push(sk);
+  // 术 - unified skill/spell menu
+  var hasAnySkill = (G.skills && G.skills.length > 0) || (G.origin && G.origin.skill && G.origin.skill.type !== '被动');
+  if (hasAnySkill) {
+    html += '<button class="btn btn-skill" onclick="G._showSkillMenu=!G._showSkillMenu;renderBattle()">📖 术 ' + (G._showSkillMenu ? '▼' : '▶') + '</button>';
+    if (G._showSkillMenu) {
+      if (G.origin && G.origin.skill && G.origin.skill.type !== '被动') {
+        var osk = G.origin.skill;
+        var oskCanUse = G.mp >= (osk.cost || 0);
+        html += '<button class="btn btn-skill' + (!oskCanUse ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em" onclick="useOriginSkill()">' + osk.emoji + ' ' + osk.name + ' <span class="skill-cost">' + (osk.cost||0) + '💧</span></button>';
       }
-    }
-    if (spells.length > 0) {
-      html += '<button class="btn btn-skill" onclick="G._showSpells=!G._showSpells;renderBattle()">🔮 法术 ' + (G._showSpells ? '▼' : '▶') + '</button>';
-      if (G._showSpells) {
-        for (var sp = 0; sp < spells.length; sp++) {
-          var ssk = spells[sp];
-          var canUse = G.mp >= ssk.cost;
-          var onCd = G._skillCooldowns && G._skillCooldowns[ssk.id] && G._skillCooldowns[ssk.id] > 0;
-          var targetIcon = ssk.target === '群攻' ? '🎯A' : ssk.target === '自身' ? '🛡️' : '🎯1';
-          var cdLabel = onCd ? ' <span class="skill-cd">⏳' + G._skillCooldowns[ssk.id] + '</span>' : (ssk.cd > 0 ? ' <span class="skill-cd-hint">CD' + ssk.cd + '</span>' : '');
-          html += '<button class="btn btn-skill' + (!canUse || onCd ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd ? '' : ' onclick="G._battleAction=\'skill:' + ssk.id + '\';' + (ssk.target === '自身' ? 'playerSkill(\'' + ssk.id + '\')' : 'toast(\'选择施法目标\')') + '"') + '>' + ssk.emoji + ' ' + ssk.name + ' <span class="skill-meta-inline">' + targetIcon + '</span><span class="skill-cost">' + ssk.cost + '💧</span>' + cdLabel + '</button>';
+      if (G.skills && G.skills.length > 0) {
+        var spells = [], combatSkills = [];
+        for (var si = 0; si < G.skills.length; si++) {
+          var sk = SKILLS.find(function(s) { return s.id === G.skills[si]; });
+          if (sk) { if (sk.category === 'spell') spells.push(sk); else combatSkills.push(sk); }
+        }
+        if (spells.length > 0) {
+          html += '<div style="margin-left:8px;font-size:0.8em;color:#888;padding:2px 0">🔮 法术</div>';
+          for (var sp = 0; sp < spells.length; sp++) {
+            var ssk = spells[sp];
+            var canUse = G.mp >= ssk.cost;
+            var onCd = G._skillCooldowns && G._skillCooldowns[ssk.id] && G._skillCooldowns[ssk.id] > 0;
+            var targetIcon = ssk.target === '群攻' ? '🎯A' : ssk.target === '自身' ? '🛡️' : '🎯1';
+            var cdLabel = onCd ? ' <span class="skill-cd">⏳' + G._skillCooldowns[ssk.id] + '</span>' : (ssk.cd > 0 ? ' <span class="skill-cd-hint">CD' + ssk.cd + '</span>' : '');
+            html += '<button class="btn btn-skill' + (!canUse || onCd ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd ? '' : ' onclick="G._battleAction=\'skill:' + ssk.id + '\';' + (ssk.target === '自身' ? 'playerSkill(\'' + ssk.id + '\')' : 'toast(\'选择施法目标\')') + '"') + '>' + ssk.emoji + ' ' + ssk.name + ' ' + targetIcon + '<span class="skill-cost">' + ssk.cost + '💧</span>' + cdLabel + '</button>';
+          }
+        }
+        if (combatSkills.length > 0) {
+          html += '<div style="margin-left:8px;font-size:0.8em;color:#888;padding:2px 0">🥊 技能</div>';
+          for (var cs = 0; cs < combatSkills.length; cs++) {
+            var csk = combatSkills[cs];
+            var canUse2 = G.mp >= csk.cost;
+            var onCd2 = G._skillCooldowns && G._skillCooldowns[csk.id] && G._skillCooldowns[csk.id] > 0;
+            var targetIcon2 = csk.target === '群攻' ? '🎯A' : csk.target === '自身' ? '🛡️' : '🎯1';
+            var cdLabel2 = onCd2 ? ' <span class="skill-cd">⏳' + G._skillCooldowns[csk.id] + '</span>' : (csk.cd > 0 ? ' <span class="skill-cd-hint">CD' + csk.cd + '</span>' : '');
+            html += '<button class="btn btn-skill' + (!canUse2 || onCd2 ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd2 ? '' : ' onclick="G._battleAction=\'skill:' + csk.id + '\';' + (csk.target === '自身' ? 'playerSkill(\'' + csk.id + '\')' : 'toast(\'选择攻击目标\')') + '"') + '>' + csk.emoji + ' ' + csk.name + ' ' + targetIcon2 + '<span class="skill-cost">' + csk.cost + '💧</span>' + cdLabel2 + '</button>';
+          }
         }
       }
     }
-    if (combatSkills.length > 0) {
-      html += '<button class="btn btn-skill" onclick="G._showCombatSkills=!G._showCombatSkills;renderBattle()">🥊 技能 ' + (G._showCombatSkills ? '▼' : '▶') + '</button>';
-      if (G._showCombatSkills) {
-        for (var cs = 0; cs < combatSkills.length; cs++) {
-          var csk = combatSkills[cs];
-          var canUse2 = G.mp >= csk.cost;
-          var onCd2 = G._skillCooldowns && G._skillCooldowns[csk.id] && G._skillCooldowns[csk.id] > 0;
-          var targetIcon2 = csk.target === '群攻' ? '🎯A' : csk.target === '自身' ? '🛡️' : '🎯1';
-          var cdLabel2 = onCd2 ? ' <span class="skill-cd">⏳' + G._skillCooldowns[csk.id] + '</span>' : (csk.cd > 0 ? ' <span class="skill-cd-hint">CD' + csk.cd + '</span>' : '');
-          html += '<button class="btn btn-skill' + (!canUse2 || onCd2 ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd2 ? '' : ' onclick="G._battleAction=\'skill:' + csk.id + '\';' + (csk.target === '自身' ? 'playerSkill(\'' + csk.id + '\')' : 'toast(\'选择攻击目标\')') + '"') + '>' + csk.emoji + ' ' + csk.name + ' <span class="skill-meta-inline">' + targetIcon2 + '</span><span class="skill-cost">' + csk.cost + '💧</span>' + cdLabel2 + '</button>';
+  }
+
+  // 物 - use items
+  html += '<button class="btn btn-item" onclick="G._showBattleItems=!G._showBattleItems;renderBattle()">🎒 物 ' + (G._showBattleItems ? '▼' : '▶') + '</button>';
+  if (G._showBattleItems) {
+    var battleItems = [];
+    if (G.inventory) {
+      for (var bi = 0; bi < G.inventory.length; bi++) {
+        var bItem = G.inventory[bi];
+        if (bItem.type === 'potion' || bItem.type === 'scroll' || bItem.type === 'food' || bItem.usable) {
+          battleItems.push({ item: bItem, idx: bi });
         }
       }
     }
+    if (battleItems.length === 0) {
+      html += '<div style="margin-left:12px;font-size:0.85em;color:#666;padding:4px 0">背包中无可用品</div>';
+    } else {
+      for (var bi2 = 0; bi2 < Math.min(battleItems.length, 6); bi2++) {
+        var bIt = battleItems[bi2];
+        html += '<button class="btn btn-item" style="margin-left:12px;font-size:0.9em" onclick="useBattleItem(' + bIt.idx + ')">' + (bIt.item.emoji||'📦') + ' ' + bIt.item.name + '</button>';
+      }
+      if (battleItems.length > 6) html += '<div style="margin-left:12px;font-size:0.8em;color:#888">...还有' + (battleItems.length - 6) + '件</div>';
+    }
   }
 
-  html += '<button class="btn btn-flee" onclick="fleeBattle()">🏃 逃跑</button>';
-  var defReduc = Math.floor(calcDef() * 0.6 * 0.5);
-  html += '<button class="btn" onclick="doDefend()" title="减少约' + defReduc + '伤害">🛡️ 防御(-' + defReduc + ')</button>';
-  html += '<button class="btn" onclick="sceneInventoryFromBattle()">🎒 背包</button>';
-  // D1: Auto-battle toggle
+  // 防
+  html += '<button class="btn btn-defend" onclick="doDefend()">🛡️ 防</button>';
+
+  // 逃
+  html += '<button class="btn btn-flee" onclick="fleeBattle()">🏃 逃</button>';
+
+  // R: Repeat last action (仙剑R键)
+  if (G._lastBattleAction) {
+    var repeatLabel = G._lastBattleAction === 'attack' ? '⚔️' : G._lastBattleAction === 'defend' ? '🛡️' : G._lastBattleAction === 'origin' ? (G.origin&&G.origin.skill?G.origin.skill.emoji:'📖') : '📖';
+    html += '<button class="btn" style="background:#333;color:var(--accent);font-size:0.85em" onclick="repeatLastAction()">R ' + repeatLabel + '</button>';
+  }
+
+  // Auto toggle
   if (G._autoBattle) {
-    html += '<button class="btn" style="background:#b71c1c;color:#fff" onclick="stopAutoBattle()">⏹️ 停止自动</button>';
+    html += '<button class="btn" style="background:#b71c1c;color:#fff;font-size:0.8em" onclick="stopAutoBattle()">⏹</button>';
   } else {
-    html += '<button class="btn" style="background:#2e7d32;color:#fff" onclick="startAutoBattle()">▶️ 自动</button>';
+    html += '<button class="btn" style="background:#2e7d32;color:#fff;font-size:0.8em" onclick="startAutoBattle()">▶</button>';
   }
+
   html += '</div>';
 
   render(html);
   updateStatus();
-}
 
-// === D1: Quick attack - auto-select next alive enemy and attack ===
+  // First battle tutorial
+  if (!G._battleTutorialDone && G.battle && G.battle.turn === 1) {
+    G._battleTutorialDone = true;
+    setTimeout(function() {
+      showDialog('⚔️ 战斗指南', '<b>⚔️ 攻</b>：选择敌人进行普通攻击<br>' +
+        '<b>📖 术</b>：展开法术和技能列表<br>' +
+        '<b>🎒 物</b>：使用背包中的药水和物品<br>' +
+        '<b>🛡️ 防</b>：本回合防御，受到伤害减半<br>' +
+        '<b>🏃 逃</b>：尝试逃跑<br>' +
+        '<b>R</b>：重复上回合操作<br>' +
+        '<b>▶</b>：自动战斗', ['明白了']);
+    }, 500);
+  }
+}
+// === Quick attack & Auto-battle system ===
 // === D1: Auto-battle system ===
 var _autoBattleTimer = null;
+
+function repeatLastAction() {
+  if (!G._lastBattleAction) { toast('没有上回合操作'); return; }
+  if (G._lastBattleAction === 'attack') quickAttack();
+  else if (G._lastBattleAction === 'defend') doDefend();
+  else if (G._lastBattleAction === 'skill' && G._lastSkillId) playerSkill(G._lastSkillId);
+  else if (G._lastBattleAction === 'origin') useOriginSkill();
+  else toast('请重新选择操作');
+}
+
+function useBattleItem(idx) {
+  if (!G.inventory || !G.inventory[idx]) return;
+  var item = G.inventory[idx];
+  G._lastBattleAction = 'item';
+  G.inventory.splice(idx, 1);
+  if (item.heal) {
+    G.hp = Math.min(G.maxHp, G.hp + item.heal);
+    G.battle.log.push('🧪 使用' + item.name + '恢复' + item.heal + ' HP');
+    showHealPopup(item.heal);
+  } else if (item.mana) {
+    G.mp = Math.min(G.maxMp, G.mp + item.mana);
+    G.battle.log.push('💧 使用' + item.name + '恢复' + item.mana + ' MP');
+  } else if (item.type === 'scroll') {
+    toast('🚫 战斗中无法使用传送卷轴');
+    G.inventory.splice(idx, 0, item);
+    return;
+  } else if (item.usable && item.effect) {
+    item.effect();
+    G.battle.log.push('📦 使用了' + item.name);
+  } else {
+    toast('此物品无法在战斗中使用');
+    G.inventory.splice(idx, 0, item);
+    return;
+  }
+  G._showBattleItems = false;
+  _afterPlayerAction();
+}
+
+function _afterPlayerAction() {
+  if (!G.battle || !G.inBattle) return;
+  G.battle.turn++;
+  if (G._skillCooldowns) {
+    for (var k in G._skillCooldowns) {
+      if (G._skillCooldowns[k] > 0) G._skillCooldowns[k]--;
+    }
+  }
+  setTimeout(function() { enemyTurn(); }, 400);
+}
 
 function startAutoBattle() {
   if (!G.battle || !G.inBattle) return;
@@ -10521,6 +10634,7 @@ function _runAutoBattle() {
 }
 
 function quickAttack() {
+  G._lastBattleAction = 'attack';
   var b = G.battle;
   if (!b) return;
   // Find next alive enemy (prefer current target if alive, otherwise first alive)
@@ -10848,6 +10962,7 @@ function playerAttack() {
 }
 
 function useOriginSkill() {
+  G._lastBattleAction = 'origin';
   var o = G.origin;
   if (!o || !o.skill) return;
   SFX.play('originSkill');
@@ -11122,6 +11237,7 @@ function _battleDelay(base) {
 }
 
 function doDefend() {
+  G._lastBattleAction = 'defend';
   var b = G.battle;
   if (!b) return;
   SFX.play('defend');
@@ -13754,7 +13870,7 @@ function endBattle() {
   G._burning = 0;
   G._bleeding = 0;
   G._battleAction = null;
-  G._showSpells = false;
+  G._showSpells = false; G._showCombatSkills = false; G._showSkillMenu = false; G._showBattleItems = false; G._battleTutorialDone = false; G._lastBattleAction = null; G._lastSkillId = null;
   G._showCombatSkills = false;
   updateStatus();
 
@@ -14279,6 +14395,10 @@ function sceneLordHall() {
   if (lordNpcMap[locId] && NPC_DIALOGS[lordNpcMap[locId]]) {
     html += '<button class="btn" onclick="showDialog(\''+lordNpcMap[locId]+'\',0)" style="margin:8px 0;width:100%">💬 与' + lordName + '深入交谈</button>';
   }
+  // Roland appears in whitecity lord hall
+  if (locId === 'whitecity' && NPC_DIALOGS['roland']) {
+    html += '<button class="btn" onclick="showDialog(\'roland\',0)" style="margin:8px 0;width:100%">🛡️ 与守卫队长罗兰德交谈</button>';
+  }
 
   html += '<div class="btns">';
   html += '<button class="btn" onclick="sceneTown()">↩️ 返回城镇</button>';
@@ -14591,21 +14711,10 @@ function buyItem(idx) {
   if (G.gold < price) { toast('💰 金币不足'); return; }
 
   if (it.type === 'consumable') {
-    // Teleport scrolls and damage scrolls go to inventory, not instant use
-    if (it.useType === 'teleport' || it.dmgType) {
-      G.gold -= price;
-      G.inventory.push({ id:it.id, name:it.name, type:it.type, useType:it.useType||null, dmgType:it.dmgType||null, dmg:it.dmg||0, heal:it.heal||0, restore:it.restore||0, cure:it.cure||false, light:it.light||false, tool:it.tool||false, price:it.price, desc:it.desc||'' });
-      toast('购买 ' + it.name + ',已放入背包');
-      sceneShop();
-      return;
-    }
+    // All consumables go to inventory, player uses them manually
     G.gold -= price;
-    var useMsg = it.name;
-    if (it.heal) { G.hp = Math.min(G.maxHp, G.hp + it.heal); useMsg += ' ❤️+' + it.heal; }
-    if (it.restore) { G.mp = Math.min(G.maxMp, G.mp + it.restore); useMsg += ' 💧+' + it.restore; }
-    if (it.cure) useMsg += ' 🌿解毒';
-    updateStatus();
-    toast(useMsg);
+    G.inventory.push({ id:it.id, name:it.name, type:it.type, useType:it.useType||null, dmgType:it.dmgType||null, dmg:it.dmg||0, heal:it.heal||0, restore:it.restore||0, cure:it.cure||false, light:it.light||false, tool:it.tool||false, price:it.price, desc:it.desc||'', icon:it.icon||'' });
+    toast('购买 ' + it.name + ',已放入背包');
     sceneShop();
     return;
   }
@@ -14627,21 +14736,24 @@ function _shopBuyTab(returnScene) {
   if (typeof fn === 'function') fn();
 }
 
-function _shopSellTab(returnScene) {
+function _shopSellTab(returnScene, returnHtml) {
   var title = returnScene === 'sceneBlacksmith' ? '⚒️ 铁匠铺 - 出售' : '🏪 商店 - 出售';
   if (!G._sellTab) G._sellTab = 'equipment';
   var html = '';
-  html += '<div class="scene-title">' + title + '</div>';
-  html += '<div class="money-display">💰 ' + G.gold + ' 金币</div>';
-  html += '<div class="btns" style="margin-bottom:10px">';
-  html += '<button class="btn" onclick="_shopBuyTab(\'' + returnScene + '\')">购买</button>';
-  html += '<button class="btn btn-primary" onclick="_shopSellTab(\'' + returnScene + '\')">出售</button>';
-  html += '</div>';
+  if (!returnHtml) {
+    html += '<div class="scene-title">' + title + '</div>';
+    html += '<div class="money-display">💰 ' + G.gold + ' 金币</div>';
+    html += '<div class="btns" style="margin-bottom:10px">';
+    html += '<button class="btn" onclick="_shopBuyTab(\'' + returnScene + '\')">购买</button>';
+    html += '<button class="btn btn-primary" onclick="_shopSellTab(\'' + returnScene + '\')">出售</button>';
+    html += '</div>';
+  }
 
   // Sell category tabs
   html += '<div class="btns" style="margin-bottom:8px">';
   html += '<button class="btn' + (G._sellTab === 'equipment' ? ' btn-primary' : '') + '" onclick="G._sellTab=\'equipment\';_shopSellTab(\'' + returnScene + '\')">⚔️ 装备</button>';
   html += '<button class="btn' + (G._sellTab === 'material' ? ' btn-primary' : '') + '" onclick="G._sellTab=\'material\';_shopSellTab(\'' + returnScene + '\')">🧪 材料</button>';
+  html += '<button class="btn' + (G._sellTab === 'consumable' ? ' btn-primary' : '') + '" onclick="G._sellTab=\'consumable\';_shopSellTab(\'' + returnScene + '\')">🧴 消耗品</button>';
   html += '<button class="btn' + (G._sellTab === 'all' ? ' btn-primary' : '') + '" onclick="G._sellTab=\'all\';_shopSellTab(\'' + returnScene + '\')">📦 全部</button>';
   html += '</div>';
 
@@ -14657,6 +14769,7 @@ function _shopSellTab(returnScene) {
       // Filter by tab
       if (G._sellTab === 'equipment' && item.type !== 'weapon' && item.type !== 'helmet' && item.type !== 'armor' && item.type !== 'gloves' && item.type !== 'boots' && item.type !== 'belt' && item.type !== 'necklace' && item.type !== 'ring' && item.type !== 'equipment') continue;
       if (G._sellTab === 'material' && item.type !== 'material' && item.type !== 'trade_good') continue;
+      if (G._sellTab === 'consumable' && item.type !== 'consumable') continue;
       var gkey = item.name + '|' + item.type;
       if (!sellGroups[gkey]) { sellGroups[gkey] = {item: item, indices: []}; sellOrder.push(gkey); }
       sellGroups[gkey].indices.push(i);
@@ -14682,6 +14795,7 @@ function _shopSellTab(returnScene) {
 
   var backFn = returnScene === 'sceneBlacksmith' ? 'sceneBlacksmith' : 'sceneShop';
   html += '<button class="btn" onclick="' + backFn + '()">↩️ 返回</button>';
+  if (returnHtml) { return html; }
   render(html);
 }
 
@@ -14695,14 +14809,28 @@ function sellItem(idx, returnScene) {
   var item = G.inventory[idx];
   if (!item) return;
   var sellPrice = calcSellPrice(item);
-  // Q16: Two-step sell confirmation
-  if (!G._sellConfirmIdx || G._sellConfirmIdx !== idx) {
-    G._sellConfirmIdx = idx;
-    toast('⚠️ 再次点击确认出售 ' + item.name + ' (' + sellPrice + '💰)');
-    return;
-  }
-  G._sellConfirmIdx = null;
+  // Show confirm modal instead of double-click
+  var modalHtml = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center">';
+  modalHtml += '<div style="background:#1a1a2e;border:2px solid #d4a017;border-radius:12px;padding:20px;max-width:320px;width:90%;text-align:center">';
+  modalHtml += '<div style="color:#d4a017;font-size:1.1em;font-weight:bold;margin-bottom:8px">💰 确认出售</div>';
+  modalHtml += '<div style="color:#e0e0e0;margin:8px 0">' + (item.icon ? item.icon + ' ' : '') + '<b>' + item.name + '</b></div>';
+  modalHtml += '<div style="color:#d4a017;margin:4px 0">售价: ' + sellPrice + ' 💰</div>';
+  modalHtml += '<div style="display:flex;gap:8px;margin-top:16px">';
+  modalHtml += '<button class="btn" style="flex:1" onclick="document.getElementById(\'sellModal\').remove();">取消</button>';
+  modalHtml += '<button class="btn btn-primary" style="flex:1" onclick="doSellItem(' + idx + ',\'' + (returnScene||'') + '\');document.getElementById(\'sellModal\').remove();">出售</button>';
+  modalHtml += '</div></div></div>';
+  var oldModal = document.getElementById('sellModal');
+  if (oldModal) oldModal.remove();
+  var modalDiv = document.createElement('div');
+  modalDiv.id = 'sellModal';
+  modalDiv.innerHTML = modalHtml;
+  document.body.appendChild(modalDiv);
+}
 
+function doSellItem(idx, returnScene) {
+  var item = G.inventory[idx];
+  if (!item) return;
+  var sellPrice = calcSellPrice(item);
   G.gold += sellPrice;
   G.inventory.splice(idx, 1);
   updateStatus();
@@ -15086,24 +15214,8 @@ function buyRareSmithItem(idx) {
 }
 
 function renderSmithSell() {
-  var html = '';
-  html += '<div class="shop-items">';
-  if (G.inventory && G.inventory.length > 0) {
-    for (var i = 0; i < G.inventory.length; i++) {
-      var item = G.inventory[i];
-      var sellPrice = Math.floor((item.sellPrice || item.price || 10) * 0.5);
-      if (G.origin && G.origin.id === 'trader') sellPrice = Math.floor(sellPrice * 1.2);
-      html += '<div class="shop-item" style="position:relative">';
-      html += '<div class="item-name">' + (item.icon ? item.icon + ' ' : '') + item.name + '</div>';
-      html += '<div class="item-stats">' + getItemStatString(item) + '</div>';
-      html += '<div class="item-price" style="color:#d4a017">+' + sellPrice + ' 💰</div>';
-      html += '</div>';
-      html += '<button class="btn-small" style="position:absolute;right:4px;top:4px;background:#4a2a1a;border:1px solid #a55;color:#d4a017" onclick="sellItem(' + i + ',\'sceneBlacksmith\')">💰出售</button>';    }
-  } else {
-    html += '<div style="color:#888;text-align:center;padding:20px">背包中没有可出售的物品</div>';
-  }
-  html += '</div>';
-  return html;
+  // Reuse _shopSellTab with classification and stacking
+  return _shopSellTab('sceneBlacksmith', true);
 }
 
 function removeMaterialsFromInventory(matList) {
@@ -15263,6 +15375,10 @@ function sceneTraining() {
     html += renderDragonOffering();
   }
 
+  // Roland as training master in whitecity
+  if (G.location === 'whitecity' && NPC_DIALOGS['roland']) {
+    html += '<button class="btn" onclick="showDialog(\'roland\',0)" style="margin:8px 0;width:100%">🛡️ 与守卫队长罗兰德交谈</button>';
+  }
   html += '<button class="btn" onclick="sceneTown()">↩️ 离开</button>';
   render(html);
 }
