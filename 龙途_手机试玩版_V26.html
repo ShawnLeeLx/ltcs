@@ -38,7 +38,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Georgia', 'Songti SC', 'STSong', serif;
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1709,42 +1709,46 @@ body {
   .bld-right { display: none; }
   .bld-info { align-items: center; }
 
-  /* Battle: stack enemies vertically */
+  /* Battle: stack enemies vertically + compact layout */
   .battle-enemies { flex-direction: column; gap: 6px; align-items: stretch; }
   .enemy-card {
     min-width: auto !important;
     width: 100%;
-    padding: 8px 10px;
-    gap: 8px;
+    padding: 6px 8px;
+    gap: 6px;
     text-align: left;
     border-width: 1px;
   }
-  .enemy-card .enemy-emoji { font-size: 24px; }
-  .enemy-card .enemy-name { font-size: 13px; }
-  .enemy-card .enemy-hp-text { font-size: 11px; }
+  .enemy-card .enemy-emoji { font-size: 22px; }
+  .enemy-card .enemy-name { font-size: 12px; }
+  .enemy-card .enemy-hp-text { font-size: 10px; }
+  .enemy-card .enemy-intent { font-size: 10px; }
+  .enemy-hp-bar { height: 4px; }
   .battle-boss-frame { padding: 4px; }
 
   /* Battle player panel */
-  .battle-player { padding: 8px; }
-  .player-name { font-size: 13px; }
-  .player-bars { gap: 3px; }
+  .battle-player { padding: 6px; margin: 4px 0; }
+  .player-name { font-size: 12px; }
+  .player-bars { gap: 2px; }
+  .player-hp-bar, .player-mp-bar { height: 8px; }
+  .player-status-bar { font-size: 10px; gap: 4px; }
   .player-bar-row { font-size: 11px; gap: 4px; }
   .player-stats-inline { font-size: 11px; }
   .status-icon { font-size: 10px; padding: 1px 4px; }
 
-  /* Battle actions */
+  /* Battle actions - compact sticky bottom */
   .battle-actions {
     position: sticky;
     bottom: 0;
     background: linear-gradient(0deg, var(--bg) 70%, transparent);
-    padding: 8px 0 12px;
+    padding: 4px 0 8px;
     margin: 0 -8px;
-    gap: 6px;
+    gap: 4px;
   }
   .battle-actions .btn {
-    min-height: 48px;
-    min-width: 56px;
-    font-size: 13px;
+    min-height: 40px;
+    min-width: 44px;
+    font-size: 12px;
     flex: 1 1 calc(25% - 8px);
     margin: 2px;
     padding: 6px 4px;
@@ -1757,8 +1761,8 @@ body {
   }
 
   /* Battle log */
-  .battle-log { max-height: 90px; font-size: 11px; padding: 6px; margin: 6px 0; }
-  .battle-turn-counter { font-size: 11px; padding: 3px 6px; }
+  .battle-log { max-height: 70px; font-size: 10px; padding: 4px; margin: 4px 0; }
+  .battle-turn-counter { font-size: 10px; padding: 2px 4px; }
 
   /* Wave intermission */
   .wave-status { padding: 8px; margin: 8px 0; }
@@ -1782,7 +1786,7 @@ body {
   .map-actions .btn { flex: 1 1 calc(50% - 8px); }
 
   /* Mini map */
-  .mini-map-grid { height: 260px !important; }
+  .mini-map-grid { height: 200px !important; }
   .mini-area { padding: 8px; }
   .mini-area-name { font-size: 14px; }
   .mini-area-desc { font-size: 12px; }
@@ -1950,6 +1954,10 @@ body {
 </head>
 <body>
 <div id="status"></div>
+<div id="audio-ctrl" style="position:fixed;top:4px;right:4px;z-index:9999;display:flex;gap:2px;">
+  <button id="btn-sfx" onclick="toggleSfxBtn()" style="border:none;background:none;font-size:14px;cursor:pointer;padding:2px 4px;opacity:0.6" title="SFX">🔊</button>
+  <button id="btn-bgm" onclick="toggleBgmBtn()" style="border:none;background:none;font-size:14px;cursor:pointer;padding:2px 4px;opacity:0.6" title="BGM">🎵</button>
+</div>
 <div id="game"></div>
 <div id="toast" class="toast-container"></div>
 <!-- D3: Mobile bottom nav -->
@@ -2109,7 +2117,7 @@ function showGiftPanel(sceneType) {
   var loc = G.currentLocation || 'whitecity';
   if (sceneType === 'inn') {
     var innNpcMap = {
-      whitecity:['innkeep_white','roland','elena','lord_white'],
+      whitecity:['innkeep_white','elena','lord_white'],
       ironridge:['innkeep_iron','hank','smithkeep_iron','lord_iron'],
       tidport:['innkeep_tid','captain_storm','lord_tid'],
       sunspire:['innkeep_sun','sage_ilan','lord_sun'],
@@ -2126,7 +2134,7 @@ function showGiftPanel(sceneType) {
     npcList = innNpcMap[loc] || [];
   } else if (sceneType === 'blacksmith') {
     var smithNpcMap = {
-      whitecity:['roland','hank'],
+      whitecity:['hank'],
       ironridge:['smithkeep_iron','hank'],
       dragonreach:['smithkeep_drag'],
       icereef:['smithkeep_ice']
@@ -2134,7 +2142,7 @@ function showGiftPanel(sceneType) {
     npcList = smithNpcMap[loc] || [];
   } else if (sceneType === 'shop') {
     var shopNpcMap = {
-      whitecity:['shopkeep_white','elena','roland'],
+      whitecity:['shopkeep_white','elena'],
       ironridge:['smithkeep_iron'],
       tidport:['mystic_wu','innkeep_tid'],
       sunspire:['sage_ilan','innkeep_sun'],
@@ -3326,6 +3334,7 @@ function checkAchievements() {
 }
 
 function sceneAchievements() {
+  BGM.play('menu');
   checkAchievements();
   var filter = G._achFilter || 'all';
   var html = '';
@@ -3683,8 +3692,8 @@ var CHAPTER_UNLOCKS = {
   'ch1_lake_mystery': [],
   'ch1_lake_explore': [],
   'ch1_boss_pre': ['darkforest'],
-  'ch2_forest_warning': [],
-  'ch2_fortress_discovery': ['fortress'],
+  'ch2_forest_warning': ['fortress'],
+  'ch2_fortress_discovery': [],
   'ch2_fortress_boss': ['mine'],
   'ch3_mine_entrance': ['ironridge'],
   'ch3_mine_explore': [],
@@ -7726,6 +7735,181 @@ SFX.init();
   });
 })();
 
+// ═══════════════════════════════════════════════════════════
+// BGM ENGINE (8-bit chiptune, Web Audio API, zero dependencies)
+// ═══════════════════════════════════════════════════════════
+var BGM = (function() {
+  var _ctx = null;
+  var _gain = null;
+  var _current = null;  // {name, intervalId, oscillators:[]}
+  var _vol = 0.15;    // BGM 默认音量（低于 SFX）
+  var _muted = false;
+  var _enabled = true;
+
+  function audioCtx() {
+    if (!_ctx) {
+      try { _ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e) { _enabled = false; return null; }
+    }
+    if (_ctx.state === 'suspended') _ctx.resume();
+    return _ctx;
+  }
+
+  // ═══ 乐曲定义（频率序列，循环播放）═══
+  // 每组音符: [freq, duration, waveform?, volMod?]
+  // 循环自动，每首曲子用 setTimeout 序列循环
+
+  // 城镇BGM: 欢快温馨的 8-bit 旋律（C大调，120bpm）
+  var TOWN_LOOP = [
+    [262,0.18],[294,0.18],[330,0.18],[349,0.18],
+    [392,0.27],[349,0.18],[330,0.36],
+    [330,0.18],[349,0.18],[392,0.18],[440,0.18],
+    [494,0.27],[440,0.18],[392,0.36],
+    [392,0.18],[440,0.18],[494,0.18],[523,0.18],
+    [587,0.27],[523,0.18],[494,0.36],
+    [262,0.18],[330,0.18],[392,0.18],[494,0.18],
+    [523,0.45],[440,0.18],[392,0.63]
+  ];
+
+  // 战斗BGM: 紧张快节奏（半音阶下，90bpm 急）
+  var BATTLE_LOOP = [
+    [440,0.12],[494,0.12],[523,0.12],[587,0.12],
+    [659,0.18],[587,0.12],[523,0.12],
+    [440,0.12],[523,0.12],[587,0.12],[659,0.12],
+    [698,0.18],[659,0.12],[587,0.12],
+    [523,0.12],[587,0.12],[659,0.12],[523,0.12],
+    [440,0.27],[392,0.18],[440,0.45],
+    [330,0.12],[392,0.12],[440,0.12],[523,0.12],
+    [587,0.18],[523,0.12],[440,0.45]
+  ];
+
+  // 深渊BGM: 阴郁低沉（D小调，慢）
+  var ABYSS_LOOP = [
+    [147,0.3],[165,0.3],[175,0.3],[165,0.3],
+    [147,0.45],[131,0.3],[147,0.6],
+    [165,0.3],[175,0.3],[196,0.3],[175,0.3],
+    [165,0.45],[147,0.3],[131,0.6],
+    [131,0.3],[147,0.3],[165,0.3],[147,0.3],
+    [131,0.45],[117,0.3],[131,0.6]
+  ];
+
+  // 通用/菜单 BGM: 柔和旋律
+  var MENU_LOOP = [
+    [392,0.25],[440,0.25],[494,0.25],[523,0.25],
+    [494,0.25],[440,0.25],[392,0.5],
+    [349,0.25],[392,0.25],[440,0.25],[494,0.25],
+    [440,0.25],[392,0.25],[349,0.5]
+  ];
+
+  var TRACKS = {
+    town:   { loop: TOWN_LOOP, wave: 'square',  vol: 0.15 },
+    battle: { loop: BATTLE_LOOP, wave: 'sawtooth', vol: 0.12 },
+    abyss:  { loop: ABYSS_LOOP,  wave: 'sawtooth', vol: 0.10 },
+    menu:   { loop: MENU_LOOP,   wave: 'triangle', vol: 0.10 }
+  };
+
+  // 播放单音符（用于 BGM 序列）
+  function playNote(freq, duration, wave, vol) {
+    var c = audioCtx();
+    if (!c || _muted || !_enabled) return;
+    var osc = c.createOscillator();
+    var g = c.createGain();
+    osc.type = wave || 'square';
+    osc.frequency.value = freq;
+    var v = (_vol * (vol || 1)) * (_muted ? 0 : 1);
+    g.gain.setValueAtTime(v, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + duration);
+    osc.connect(g);
+    g.connect(_gain || c.destination);
+    osc.start(c.currentTime);
+    osc.stop(c.currentTime + duration + 0.05);
+  }
+
+  // 停止当前 BGM
+  function stop() {
+    if (_current && _current.timer) {
+      clearTimeout(_current.timer);
+      _current.timer = null;
+    }
+    _current = null;
+  }
+
+  // 启动 BGM 循环
+  function start(name) {
+    if (!TRACKS[name] || !_enabled) return;
+    stop(); // 先停旧的
+    var track = TRACKS[name];
+    var loop = track.loop;
+    var wave = track.wave;
+    var tIdx = 0;
+
+    // 建立 master gain
+    var c = audioCtx();
+    if (c && !_gain) {
+      _gain = c.createGain();
+      _gain.gain.value = _muted ? 0 : _vol;
+      _gain.connect(c.destination);
+    }
+
+    function scheduleNext() {
+      if (!_current || _current.name !== name) return; // 已被 stop/切换
+      var note = loop[tIdx % loop.length];
+      playNote(note[0], note[1], wave, track.vol);
+      tIdx++;
+      _current.timer = setTimeout(scheduleNext, note[1] * 1000);
+    }
+
+    _current = { name: name, timer: null };
+    scheduleNext();
+  }
+
+  return {
+    play: function(name) {
+      if (!TRACKS[name]) return;
+      if (_current && _current.name === name) return; // 已在播
+      start(name);
+    },
+    stop: stop,
+    toggleMute: function() {
+      _muted = !_muted;
+      if (_gain) _gain.gain.value = _muted ? 0 : _vol;
+      try { localStorage.setItem('bgm_muted', _muted ? '1' : '0'); } catch(e) {}
+      return _muted;
+    },
+    muted: function() { return _muted; },
+    setVol: function(v) {
+      _vol = Math.max(0, Math.min(1, v));
+      if (_gain) _gain.gain.value = _muted ? 0 : _vol;
+      try { localStorage.setItem('bgm_vol', _vol); } catch(e) {}
+    },
+    vol: function() { return _vol; },
+    init: function() {
+      try {
+        var m = localStorage.getItem('bgm_muted');
+        if (m === '1') _muted = true;
+        var v = localStorage.getItem('bgm_vol');
+        if (v) _vol = Math.max(0, Math.min(1, parseFloat(v)));
+      } catch(e) {}
+    },
+    current: function() { return _current ? _current.name : null; }
+  };
+})();
+
+BGM.init();
+
+// Audio control buttons
+function toggleSfxBtn() {
+  var muted = SFX.toggleMute();
+  var btn = document.getElementById('btn-sfx');
+  if (btn) { btn.textContent = muted ? '🔇' : '🔊'; btn.style.opacity = muted ? '0.3' : '0.6'; }
+}
+function toggleBgmBtn() {
+  var muted = BGM.toggleMute();
+  var btn = document.getElementById('btn-bgm');
+  if (btn) { btn.textContent = muted ? '🔇' : '🎵'; btn.style.opacity = muted ? '0.3' : '0.6'; }
+  if (muted) BGM.stop(); else { var c = BGM.current(); if (c) BGM.play(c); }
+}
+
 function render(html) { var el = document.getElementById('game'); if (el) el.innerHTML = html; }
 function toast(msg) { var el = document.getElementById('toast'); if (el) { el.textContent = msg; el.style.opacity = 1; setTimeout(function() { el.style.opacity = 0; }, 2000); } }
 
@@ -7735,6 +7919,7 @@ function toast(msg) { var el = document.getElementById('toast'); if (el) { el.te
 // ═══════════════════════════════════════════════════════════
 
 function sceneIntro() {
+  BGM.play('menu');
   var html = '';
   html += '<div class="scene-title">龙途传说</div>';
   html += '<div class="scene-text" style="text-align:center;line-height:2">';
@@ -8167,6 +8352,7 @@ function sceneWorldMapOverview() {
 }
 
 function sceneWorldMap() {
+  BGM.play('town');
   tickWeather();
   // If player is at a non-town location with a mini-map, go there instead
   // (unless user explicitly navigated to world map via the button)
@@ -8459,8 +8645,6 @@ function leaveMiniMap() {
     }
   }
   G.miniMapPos = null;
-  // Return to the nearest town instead of world map
-  // (sceneWorldMap would auto-redirect back to miniMap for non-town locations, creating a loop)
   // Find nearest connected town
   var _nearestTown = 'whitecity';
   var _conns = LOC_CONNECTIONS[G.location] || [];
@@ -8468,8 +8652,35 @@ function leaveMiniMap() {
     var _cl = LOCATIONS[_conns[_ci]];
     if (_cl && _cl.type === 'town') { _nearestTown = _conns[_ci]; break; }
   }
-  G.location = _nearestTown;
-  sceneTown();
+  // If already in a town, just return
+  if (loc && loc.type === 'town') {
+    sceneTown();
+    return;
+  }
+  // In the wild: check for teleport scroll first
+  var scrollIdx = -1;
+  for (var si = 0; si < G.inventory.length; si++) {
+    if (G.inventory[si] && G.inventory[si].useType === 'teleport') { scrollIdx = si; break; }
+  }
+  if (scrollIdx >= 0) {
+    // Use teleport scroll - show destination picker
+    useTeleportScroll(scrollIdx);
+  } else {
+    // Walk back - may encounter enemies, but free
+    toast('🚶 步行返回 ' + LOCATIONS[_nearestTown].name + '...');
+    G.location = _nearestTown;
+    // Random encounter chance on the way back
+    if (Math.random() < 0.3) {
+      var retEnemies = loc.enemies || ['goblin'];
+      var eId = retEnemies[rand(0, retEnemies.length - 1)];
+      var eData = ENEMIES[eId] || ENEMIES['goblin'];
+      var eCopy = Object.assign({}, eData);
+      if (eCopy.hp) eCopy.curHp = eCopy.hp;
+      startBattleWith([eCopy], { msg: '返回途中遭遇敌人!' });
+    } else {
+      sceneTown();
+    }
+  }
 }
 
 function _goWorldMapFromMiniMap() {
@@ -8543,6 +8754,10 @@ function enterMiniMap() {
   if (!loc.mapConfig) {
     toast('这里没有可探索的区域');
     return;
+  }
+  // Warn if HP is low before entering dangerous area
+  if (G.hp < G.maxHp * 0.5) {
+    toast('⚠️ HP不足50%!建议先去旅店休息');
   }
   var map = getMapForLocation();
   G.miniMapPos = { r: map.startR, c: map.startC };
@@ -9373,6 +9588,7 @@ function miniMapStone() {
 
 // Universal battle entry — accepts an enemy object or array of enemy objects
 function startBattleWith(enemyOrArray, opts) {
+  BGM.play('battle');
   var enemies = Array.isArray(enemyOrArray) ? enemyOrArray : [enemyOrArray];
   for (var i = 0; i < enemies.length; i++) {
     var e = enemies[i];
@@ -13330,6 +13546,7 @@ function endBattle() {
   
   // A3: Wave battle — if more waves remain, show intermission instead of full victory
   if (b && b.waves && b.wave < b.totalWaves - 1) {
+    BGM.stop(); // 波间停 BGM
     G.inBattle = false;
     if (G._autoBattle) stopAutoBattle();
     SFX.play('waveClear');
@@ -13677,6 +13894,7 @@ function goToAttrAlloc() {
 }
 
 function afterBattleContinue() {
+  BGM.play('town');
   // A3: Clear wave temp buffs
   if (G._waveTempAtk) delete G._waveTempAtk;
   if (G._waveTempDef) delete G._waveTempDef;
@@ -13713,6 +13931,7 @@ function doLevelUp() {
 }
 
 function sceneDeath() {
+  BGM.stop();
   G.totalBattlesLost++;
   SFX.play('death');
   var lossGold = Math.floor(G.gold * 0.1);
@@ -13862,6 +14081,7 @@ function sceneStory() {
 }
 
 function sceneTown() {
+  BGM.play('town');
   G._currentScene = 'sceneTown';
   G._lastSaveScene = 'sceneTown';
   tickWeather();
@@ -14091,6 +14311,10 @@ function sceneLordHall() {
   };
   if (lordNpcMap[locId] && NPC_DIALOGS[lordNpcMap[locId]]) {
     html += '<button class="btn" onclick="showDialog(\''+lordNpcMap[locId]+'\',0)" style="margin:8px 0;width:100%">💬 与' + lordName + '深入交谈</button>';
+  }
+  // Roland appears in whitecity lord hall
+  if (locId === 'whitecity' && NPC_DIALOGS['roland']) {
+    html += '<button class="btn" onclick="showDialog(\'roland\',0)" style="margin:8px 0;width:100%">🛡️ 与守卫队长罗兰德交谈</button>';
   }
 
   html += '<div class="btns">';
@@ -14404,21 +14628,10 @@ function buyItem(idx) {
   if (G.gold < price) { toast('💰 金币不足'); return; }
 
   if (it.type === 'consumable') {
-    // Teleport scrolls and damage scrolls go to inventory, not instant use
-    if (it.useType === 'teleport' || it.dmgType) {
-      G.gold -= price;
-      G.inventory.push({ id:it.id, name:it.name, type:it.type, useType:it.useType||null, dmgType:it.dmgType||null, dmg:it.dmg||0, heal:it.heal||0, restore:it.restore||0, cure:it.cure||false, light:it.light||false, tool:it.tool||false, price:it.price, desc:it.desc||'' });
-      toast('购买 ' + it.name + ',已放入背包');
-      sceneShop();
-      return;
-    }
+    // All consumables go to inventory, player uses them manually
     G.gold -= price;
-    var useMsg = it.name;
-    if (it.heal) { G.hp = Math.min(G.maxHp, G.hp + it.heal); useMsg += ' ❤️+' + it.heal; }
-    if (it.restore) { G.mp = Math.min(G.maxMp, G.mp + it.restore); useMsg += ' 💧+' + it.restore; }
-    if (it.cure) useMsg += ' 🌿解毒';
-    updateStatus();
-    toast(useMsg);
+    G.inventory.push({ id:it.id, name:it.name, type:it.type, useType:it.useType||null, dmgType:it.dmgType||null, dmg:it.dmg||0, heal:it.heal||0, restore:it.restore||0, cure:it.cure||false, light:it.light||false, tool:it.tool||false, price:it.price, desc:it.desc||'', icon:it.icon||'' });
+    toast('购买 ' + it.name + ',已放入背包');
     sceneShop();
     return;
   }
@@ -14440,21 +14653,24 @@ function _shopBuyTab(returnScene) {
   if (typeof fn === 'function') fn();
 }
 
-function _shopSellTab(returnScene) {
+function _shopSellTab(returnScene, returnHtml) {
   var title = returnScene === 'sceneBlacksmith' ? '⚒️ 铁匠铺 - 出售' : '🏪 商店 - 出售';
   if (!G._sellTab) G._sellTab = 'equipment';
   var html = '';
-  html += '<div class="scene-title">' + title + '</div>';
-  html += '<div class="money-display">💰 ' + G.gold + ' 金币</div>';
-  html += '<div class="btns" style="margin-bottom:10px">';
-  html += '<button class="btn" onclick="_shopBuyTab(\'' + returnScene + '\')">购买</button>';
-  html += '<button class="btn btn-primary" onclick="_shopSellTab(\'' + returnScene + '\')">出售</button>';
-  html += '</div>';
+  if (!returnHtml) {
+    html += '<div class="scene-title">' + title + '</div>';
+    html += '<div class="money-display">💰 ' + G.gold + ' 金币</div>';
+    html += '<div class="btns" style="margin-bottom:10px">';
+    html += '<button class="btn" onclick="_shopBuyTab(\'' + returnScene + '\')">购买</button>';
+    html += '<button class="btn btn-primary" onclick="_shopSellTab(\'' + returnScene + '\')">出售</button>';
+    html += '</div>';
+  }
 
   // Sell category tabs
   html += '<div class="btns" style="margin-bottom:8px">';
   html += '<button class="btn' + (G._sellTab === 'equipment' ? ' btn-primary' : '') + '" onclick="G._sellTab=\'equipment\';_shopSellTab(\'' + returnScene + '\')">⚔️ 装备</button>';
   html += '<button class="btn' + (G._sellTab === 'material' ? ' btn-primary' : '') + '" onclick="G._sellTab=\'material\';_shopSellTab(\'' + returnScene + '\')">🧪 材料</button>';
+  html += '<button class="btn' + (G._sellTab === 'consumable' ? ' btn-primary' : '') + '" onclick="G._sellTab=\'consumable\';_shopSellTab(\'' + returnScene + '\')">🧴 消耗品</button>';
   html += '<button class="btn' + (G._sellTab === 'all' ? ' btn-primary' : '') + '" onclick="G._sellTab=\'all\';_shopSellTab(\'' + returnScene + '\')">📦 全部</button>';
   html += '</div>';
 
@@ -14470,6 +14686,7 @@ function _shopSellTab(returnScene) {
       // Filter by tab
       if (G._sellTab === 'equipment' && item.type !== 'weapon' && item.type !== 'helmet' && item.type !== 'armor' && item.type !== 'gloves' && item.type !== 'boots' && item.type !== 'belt' && item.type !== 'necklace' && item.type !== 'ring' && item.type !== 'equipment') continue;
       if (G._sellTab === 'material' && item.type !== 'material' && item.type !== 'trade_good') continue;
+      if (G._sellTab === 'consumable' && item.type !== 'consumable') continue;
       var gkey = item.name + '|' + item.type;
       if (!sellGroups[gkey]) { sellGroups[gkey] = {item: item, indices: []}; sellOrder.push(gkey); }
       sellGroups[gkey].indices.push(i);
@@ -14495,6 +14712,7 @@ function _shopSellTab(returnScene) {
 
   var backFn = returnScene === 'sceneBlacksmith' ? 'sceneBlacksmith' : 'sceneShop';
   html += '<button class="btn" onclick="' + backFn + '()">↩️ 返回</button>';
+  if (returnHtml) { return html; }
   render(html);
 }
 
@@ -14508,14 +14726,28 @@ function sellItem(idx, returnScene) {
   var item = G.inventory[idx];
   if (!item) return;
   var sellPrice = calcSellPrice(item);
-  // Q16: Two-step sell confirmation
-  if (!G._sellConfirmIdx || G._sellConfirmIdx !== idx) {
-    G._sellConfirmIdx = idx;
-    toast('⚠️ 再次点击确认出售 ' + item.name + ' (' + sellPrice + '💰)');
-    return;
-  }
-  G._sellConfirmIdx = null;
+  // Show confirm modal instead of double-click
+  var modalHtml = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center">';
+  modalHtml += '<div style="background:#1a1a2e;border:2px solid #d4a017;border-radius:12px;padding:20px;max-width:320px;width:90%;text-align:center">';
+  modalHtml += '<div style="color:#d4a017;font-size:1.1em;font-weight:bold;margin-bottom:8px">💰 确认出售</div>';
+  modalHtml += '<div style="color:#e0e0e0;margin:8px 0">' + (item.icon ? item.icon + ' ' : '') + '<b>' + item.name + '</b></div>';
+  modalHtml += '<div style="color:#d4a017;margin:4px 0">售价: ' + sellPrice + ' 💰</div>';
+  modalHtml += '<div style="display:flex;gap:8px;margin-top:16px">';
+  modalHtml += '<button class="btn" style="flex:1" onclick="document.getElementById(\'sellModal\').remove();">取消</button>';
+  modalHtml += '<button class="btn btn-primary" style="flex:1" onclick="doSellItem(' + idx + ',\'' + (returnScene||'') + '\');document.getElementById(\'sellModal\').remove();">出售</button>';
+  modalHtml += '</div></div></div>';
+  var oldModal = document.getElementById('sellModal');
+  if (oldModal) oldModal.remove();
+  var modalDiv = document.createElement('div');
+  modalDiv.id = 'sellModal';
+  modalDiv.innerHTML = modalHtml;
+  document.body.appendChild(modalDiv);
+}
 
+function doSellItem(idx, returnScene) {
+  var item = G.inventory[idx];
+  if (!item) return;
+  var sellPrice = calcSellPrice(item);
   G.gold += sellPrice;
   G.inventory.splice(idx, 1);
   updateStatus();
@@ -14559,6 +14791,7 @@ function talkToNpc(npcKey) {
 
 
 function sceneBlacksmith() {
+  BGM.play('town');
   G._currentScene = 'sceneBlacksmith';
   var loc = LOCATIONS[G.location];
   var items = (loc && loc.smithItems) ? loc.smithItems : [
@@ -14898,24 +15131,8 @@ function buyRareSmithItem(idx) {
 }
 
 function renderSmithSell() {
-  var html = '';
-  html += '<div class="shop-items">';
-  if (G.inventory && G.inventory.length > 0) {
-    for (var i = 0; i < G.inventory.length; i++) {
-      var item = G.inventory[i];
-      var sellPrice = Math.floor((item.sellPrice || item.price || 10) * 0.5);
-      if (G.origin && G.origin.id === 'trader') sellPrice = Math.floor(sellPrice * 1.2);
-      html += '<div class="shop-item" style="position:relative">';
-      html += '<div class="item-name">' + (item.icon ? item.icon + ' ' : '') + item.name + '</div>';
-      html += '<div class="item-stats">' + getItemStatString(item) + '</div>';
-      html += '<div class="item-price" style="color:#d4a017">+' + sellPrice + ' 💰</div>';
-      html += '</div>';
-      html += '<button class="btn-small" style="position:absolute;right:4px;top:4px;background:#4a2a1a;border:1px solid #a55;color:#d4a017" onclick="sellItem(' + i + ',\'sceneBlacksmith\')">💰出售</button>';    }
-  } else {
-    html += '<div style="color:#888;text-align:center;padding:20px">背包中没有可出售的物品</div>';
-  }
-  html += '</div>';
-  return html;
+  // Reuse _shopSellTab with classification and stacking
+  return _shopSellTab('sceneBlacksmith', true);
 }
 
 function removeMaterialsFromInventory(matList) {
@@ -15049,6 +15266,7 @@ function finishCraft(recipeIdx, affixChoiceIdx) {
 }
 
 function sceneTraining() {
+  BGM.play('town');
   G._currentScene = 'sceneTraining';
   var html = '';
   html += '<div class="scene-title">🏋️ 训练场</div>';
@@ -15074,6 +15292,10 @@ function sceneTraining() {
     html += renderDragonOffering();
   }
 
+  // Roland as training master in whitecity
+  if (G.location === 'whitecity' && NPC_DIALOGS['roland']) {
+    html += '<button class="btn" onclick="showDialog(\'roland\',0)" style="margin:8px 0;width:100%">🛡️ 与守卫队长罗兰德交谈</button>';
+  }
   html += '<button class="btn" onclick="sceneTown()">↩️ 离开</button>';
   render(html);
 }
@@ -15783,6 +16005,7 @@ function spinWheel() {
 // ═══════════════════════════════════════════════════════════
 
 function sceneGuild() {
+  BGM.play('town');
   G._currentScene = 'sceneGuild';
   checkStoryTriggers('visit_place', 'guild');
   var html = '';
@@ -16906,6 +17129,7 @@ function sceneEquipmentFromExplore() { _equipmentReturnTo = 'renderMiniMap'; sce
 function sceneEquipmentFromBattle() { _equipmentReturnTo = 'renderBattle'; sceneEquipment(); }
 
 function sceneEquipment() {
+  BGM.play('menu');
   G._currentScene = 'sceneEquipment';
   var baseStr = G.str || 0, baseAgi = G.agi || 0, baseInt = G.int || 0;
   var baseCha = G.cha || 0, baseLuk = G.luk || 0;
@@ -17136,6 +17360,7 @@ function _equipmentGoBack() {
 }
 
 function sceneInventory() {
+  BGM.play('menu');
   var html = '';
   html += '<div class="scene-title">🎒 背包</div>';
   html += '<div class="money-display">💰 ' + G.gold + ' 金币</div>';
@@ -18024,6 +18249,7 @@ var DD_EVENTS = [
 ];
 
 function sceneDeepDive() {
+  BGM.play('abyss');
   G._currentScene = 'sceneDeepDive';
   G._lastSaveScene = 'sceneDeepDive';
   if (!G.dd) G.dd = { bestFloor:0, totalRuns:0, totalKills:0, ddCoins:0, permBuffs:{} };

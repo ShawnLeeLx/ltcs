@@ -13,7 +13,7 @@ _Only loaded in main sessions. Review daily files and keep what matters._
 
 ## 龙途传说项目
 
-- 当前版本：V26（854KB，19039行，324函数，JS语法通过，CSS平衡0）
+- 当前版本：V26（1012KB，19419行，334函数，JS语法通过，CSS平衡0）
 - 基础文件：龙途_手机试玩版_V19.html（未修改备份）
 - 版本线：V19(基础) → V20(历史快照) → V21(冻结) → V22(冻结) → V23(冻结) → V24(冻结) → V25(冻结) → V26(当前开发版）
 - V20核心改动:ch4-ch12 STORY目标丰富化、STORY_CHOICES补充、NPC_DEFS补全、applyStoryChoice新effect
@@ -22,7 +22,7 @@ _Only loaded in main sessions. Review daily files and keep what matters._
 - V23改动:好感度100%(送礼+NPC技能+buff集成)、战斗100%(防御按钮+眩晕/中毒+buff显示+46敌人技能+深渊技能)、深渊70%、商贸100%(材料商+强化/分解+稀有轮换)
 - V24改动:成就100%(44成就/11类别)、存档100%(版本迁移v6+场景恢复+游玩时长+导出/导入+8处自动存档)、套装100%(图鉴UI+效果兑现+掉落setId)、深渊100%(暗影币+永久增益+商店+精英层+跳层+专属掉落+复活+强化祭坛)、新手引导100%(12步引导+触发机制+元素高亮+跳过/重启)、行商委托100%(10个委托+多站路线+奖金+委托板UI+3新成就)、天气100%(8种天气+3区域+战斗/旅行/商贸修正+预报UI+3成就)
 - V25改动:修复ch1任务链Bug+NPC_DEFS补全+故事成就编号Bug修复+成就47→76+战斗数值平衡(等级缩放)+敌人区域差异化(20新敌人+稀有生成+天气敌人修正+3成就+掉落表)+装备掉落丰富度(12独特装备+5新元素伤害+区域掉落池+5新效果前缀)+地图体验优化(小雷达+BFS路径提示+天气条+图例+地点标签+探索状态+旅行详情弹窗+足迹标记+罗盘可视化+远程POI感知+3地图探索成就)+战斗UI打磨(回合计数+连击+血条渐变+充能预告+状态栏+防御视觉+低血警告+自动战斗+快速攻击+伤害弹窗+技能冷却系统+敌人意图预告+Boss战框架+战斗速度切换+掉落飞入动画)+A4剧情标志保存(29标志initGame+V7迁移+3数值标志兑现)+C10经济平衡(强化1.3^lv+铁剑60g+战斗金币+卖出50%+训练场1.10指数+🐉龙祭6属性永久提升+3成就)+A3战斗波次系统(Boss3-5波+波间休息+强化祝福+3成就)+B8 NPC对话深度(13核心NPC分支对话+52选择点+16好感锁+showDialog choices底层架构)
-- V26改动:CSS修复(1多余}+3不完整@keyframes toastFade/fxPop/fxBurst)+initGame补全5波次变量(_waveNoDamage/_waveBattlesCompleted/_wavePerfectClear/_waveTempAtk/_waveTempDef)+loadGame补全波次/龙祭默认值守卫+存档版本V7→V8+PWA集成(manifest.json+sw.js离线缓存+图标+apple-mobile-web-app全屏+SW注册代码)
+- V26改动:CSS修复+initGame波次变量+loadGame默认值守卫+存档V8+PWA集成+冰锥术onclick引号嵌套bug修复+8-bit SFX引擎(方波/锯齿波/噪声+Web Audio API零依赖)+18个音效注入点+8-bit BGM引擎(4首循环曲:城镇/战斗/深渊/菜单)+场景BGM自动切换+右上角音量控制(SFX🔇/BGM🎵)+GitHub Pages部署
 
 ### P0模块进度
 | 模块 | 完成度 | 说明 |
@@ -53,6 +53,7 @@ _Only loaded in main sessions. Review daily files and keep what matters._
 | D1 战斗UI打磨 | 中 | **100%** ✅ 回合计数+连击+血条渐变+充能预告+状态栏+防御视觉+低血警告+自动战斗+快速攻击+技能冷却+敌人意图+Boss框架+战斗速度+掉落动画+MP低闪烁+击杀闪光+防御减伤预览+战斗统计 |
 | B8 NPC对话深度 | 大 | **100%** ✅ 13核心NPC分支对话+52选择点+16好感锁+showDialog choices架构(罗兰德/汉克/艾琳娜/老吴/暗刃/森林流浪者/雾中精灵/沼泽巫医/伊兰/卡尔/霜翼/灰烬隐者/虚空之声)+城镇功能NPC保持线性 |
 | D3 移动端适配 | 大 | **100%** ✅ 响应式CSS+PWA部署+GitHub Pages上线 |
+| SFX 8-bit音效 | 中 | **100%** ✅ Web Audio API零依赖引擎+18 SFX注入点+4首BGM循环(城镇/战斗/深渊/菜单)+场景BGM自动切换+音量控制UI+GitHub Pages部署 |
 
 
 ### 部署信息

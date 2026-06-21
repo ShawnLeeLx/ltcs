@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "updatedAt": "2026-06-20T15:49:55.696Z",
+  "entries": {
+    "memory:memory/2026-06-15.md:1:21": {
+      "key": "memory:memory/2026-06-15.md:1:21",
+      "path": "memory/2026-06-15.md",
+      "startLine": 1,
+      "endLine": 21,
+      "source": "memory",
+      "snippet": "# 2026-06-15 Daily Notes ## 龙途传说 V25 开发 ### D2 地图体验优化 — 已完成 - 世界地图地点卡片增加类型标签（城镇/迷宫/野外）+ 探索完成度标记（✅） - SVG全域地图增加天气emoji、已探索标记 - 新增旅行详情弹窗 `_showLocDetailAndTravel` / `_confirmTravel`，点击目的地先展示详情再确认出发 - 迷你地图足迹标记：已访问房间显示小金色圆点 - 玩家自定义标记系统：📌按钮 + `_toggleMapMarker`，标记数据自动保存 - `miniMapLookAround` 增强：迷你罗盘（3×3网格）+ 远程POI感知（BFS 3步内Boss/精英/宝箱方向+距离） - 3个新地图探索成就：map_explorer_5(5区域)、map_explorer_10(10区域)、map_explorer_all(全部区域) - 成就总数 67 → 70 ### D1 战斗UI打磨 — **100%完成** ✅ - **回合计数器**：renderBattle顶部显示当前回合数 - **连击计数器**：G._comboCount，连续攻击累计，敌人回合重置，3连击以上显示🔥xN - **敌人血条颜色渐变**：hp-high(>60%绿)、hp-mid(30-60%黄)、hp-low(10-30%橙)、hp-critical(<10%红) - **玩家血条同色系** - **敌人充能预告**：强力技能(mult>=2.0)先蓄力1回合，显示⚡蓄力+技能名，敌人卡片加enemy-ch",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.42410562634468074,
+      "maxScore": 0.42410562634468074,
+      "firstRecalledAt": "2026-06-20T15:49:55.696Z",
+      "lastRecalledAt": "2026-06-20T15:49:55.696Z",
+      "queryHashes": [
+        "6343c137cbb0"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "城镇/迷宫/野外",
+        "3步内boss/精英/宝箱方向",
+        "map-explorer-5",
+        "map-explorer-10",
+        "map-explorer-all",
+        "hp-high",
+        "hp-mid",
+        "30-60"
+      ]
+    },
+    "memory:memory/2026-05-22.md:232:253": {
+      "key": "memory:memory/2026-05-22.md:232:253",
+      "path": "memory/2026-05-22.md",
+      "startLine": 232,
+      "endLine": 253,
+      "source": "memory",
+      "snippet": "- **sceneIntro()重写**：从一句简短描述改为完整叙事（龙陨故事+你是谁+你的使命） - 移除独立\"世界观\"按钮（内容已整合进开场） - **sceneOriginStory()新增「🎯 你的目标」金色卡片**：明确告诉玩家探索龙陨之地→追寻龙鳞秘密→开辟商路→走到最后 ### 2. 难度降至75% - 新增全局 `DIFF_SCALE = 0.75` 常量 + `scaleEnemy()` 函数 - 三个敌人创建点全部应用：miniMapBattle()普通遇敌、miniMapElite()精锐、startBossFight()Boss战 - 以后调整难度只需改DIFF_SCALE一个数字 ### 3. 摄像机跟随系统（核心重写） - **替换scrollToPlayer为camera-follow系统**： - `centerMapOnPlayer()` — 即时居中（首次进入） - `centerMapOnPlayerAnimated()` — 动画居中（移动时） - 动画原理：先瞬间定位旧位置(transition:none)→强制reflow→开启transition:transform 0.18s ease-out→设置新位置→CSS自动插值 - 视觉效果：玩家金色圆点固定屏幕中央，地图在脚下滑动 - 地图容器从 `overflow:auto`(scrollbar)改为 `overflow:hidden`(CSS transform移动) - 容器固定高度320px+深色背景+圆角边框 ### 产出 - `龙途_手机试玩版_V9.htm",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.42067153155803677,
+      "maxScore": 0.42067153155803677,
+      "firstRecalledAt": "2026-06-20T15:49:55.696Z",
+      "lastRecalledAt": "2026-06-20T15:49:55.696Z",
+      "queryHashes": [
+        "6343c137cbb0"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "diff-scale",
+        "0.75",
+        "以后调整难度只需改diff-scale一个数字",
+        "替换scrolltoplayer为camera-follow系统",
+        "0.18s",
+        "ease-out",
+        "龙途-手机试玩版-v9.htm",
+        "sceneintro"
+      ]
+    },
+    "memory:memory/2026-05-20.md:93:112": {
+      "key": "memory:memory/2026-05-20.md:93:112",
+      "path": "memory/2026-05-20.md",
+      "startLine": 93,
+      "endLine": 112,
+      "source": "memory",
+      "snippet": "- 建议：给技能加damageType标记('physical'/'magic'/'hybrid')，魔法技能=智力×1.5+技能基础伤害，混合=(力量+智力)×1+基础；增加法器/符文书类武器 - **待执行：尚未改代码，等用户确认** - **问题2：美术先放后做？** - 建议折中：SVG代码结构化（抽成数据如TOWN_DATA/ENEMY_ART），渲染函数只拼接；视觉微调继续但不画新SVG细节；大改等图片方案接入后统一替换 - 用户倾向先做功能，后统一改美术 - **问题3：让别人手机试玩** - 当前可玩内容：3大章约30-50分钟 - 方案A：微信发单文件HTML → 简单但微信内可能打不开 - 方案B：手机浏览器直接打开 → 需传文件 - 方案C：部署到免费静态托管(GitHub Pages/Netlify)发链接 → 最专业 - **待执行：生成单文件版（JS内联到HTML）+ 部署到网页，agent中断未完成** - 单文件版路径：龙途_试玩版_手机.html（可能已生成185KB但未确认完整性） ### 22:46 - 三大改动进行中（未完成，agent被compaction中断） 用户确认三项改动： 1. **智力→魔法伤害**：智力影响魔法技能伤害，增加法器类武器 2. **去立绘改文字版**：世界地图/人物/敌人/城镇建筑的SVG全部移除，改为文字+图标+列表",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.39470460712909694,
+      "maxScore": 0.39470460712909694,
+      "firstRecalledAt": "2026-06-20T15:49:55.696Z",
+      "lastRecalledAt": "2026-06-20T15:49:55.696Z",
+      "queryHashes": [
+        "6343c137cbb0"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "1.5",
+        "增加法器/符文书类武器",
+        "抽成数据如town-data/enemy-art",
+        "3大章约30-50分钟",
+        "pages/netlify",
+        "龙途-试玩版-手机.html",
+        "世界地图/人物/敌人/城镇建筑的svg全部移除",
+        "建议"
+      ]
+    },
+    "memory:memory/2026-05-20.md:405:424": {
+      "key": "memory:memory/2026-05-20.md:405:424",
+      "path": "memory/2026-05-20.md",
+      "startLine": 405,
+      "endLine": 424,
+      "source": "memory",
+      "snippet": "- 建议：给技能加damageType标记('physical'/'magic'/'hybrid')，魔法技能=智力×1.5+技能基础伤害，混合=(力量+智力)×1+基础；增加法器/符文书类武器 - **待执行：尚未改代码，等用户确认** - **问题2：美术先放后做？** - 建议折中：SVG代码结构化（抽成数据如TOWN_DATA/ENEMY_ART），渲染函数只拼接；视觉微调继续但不画新SVG细节；大改等图片方案接入后统一替换 - 用户倾向先做功能，后统一改美术 - **问题3：让别人手机试玩** - 当前可玩内容：3大章约30-50分钟 - 方案A：微信发单文件HTML → 简单但微信内可能打不开 - 方案B：手机浏览器直接打开 → 需传文件 - 方案C：部署到免费静态托管(GitHub Pages/Netlify)发链接 → 最专业 - **待执行：生成单文件版（JS内联到HTML）+ 部署到网页，agent中断未完成** - 单文件版路径：龙途_试玩版_手机.html（可能已生成185KB但未确认完整性） ### 22:46 - 三大改动进行中（未完成，agent被compaction中断） 用户确认三项改动： 1. **智力→魔法伤害**：智力影响魔法技能伤害，增加法器类武器 2. **去立绘改文字版**：世界地图/人物/敌人/城镇建筑的SVG全部移除，改为文字+图标+列表",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.39470460712909694,
+      "maxScore": 0.39470460712909694,
+      "firstRecalledAt": "2026-06-20T15:49:55.696Z",
+      "lastRecalledAt": "2026-06-20T15:49:55.696Z",
+      "queryHashes": [
+        "6343c137cbb0"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "1.5",
+        "增加法器/符文书类武器",
+        "抽成数据如town-data/enemy-art",
+        "3大章约30-50分钟",
+        "pages/netlify",
+        "龙途-试玩版-手机.html",
+        "世界地图/人物/敌人/城镇建筑的svg全部移除",
+        "建议"
+      ]
+    },
+    "memory:memory/2026-05-21.md:1760:1789": {
+      "key": "memory:memory/2026-05-21.md:1760:1789",
+      "path": "memory/2026-05-21.md",
+      "startLine": 1760,
+      "endLine": 1789,
+      "source": "memory",
+      "snippet": "- 根因：travelTo()末尾硬编码sceneWorldMap()，不管去城镇还是野外 - 修复：travelTo()末尾按地点类型分流：城镇→sceneTown()，野外→enterMiniMap()，其他→sceneWorldMap() **验证**：JS语法检查通过，手机试玩版重新生成(158KB, 91函数) **文件状态**： - game_v5.js ~125KB（3个bug修复代码已写入） - 龙途_手机试玩版.html ~158KB（重新生成，可直接分享） **剩余技术债务**： - 多任务系统（同时接多个任务） - 铁匠铺购买装备功能 - 探索点击移动（非方向键） - 战斗后继续探索（而非回大地图） # 2026-05-21 工作日志 ## 项目：龙途传说 — 微信小程序纯文字RPG，D&D世界观，战斗+商贸双核心 ### 00:01 - 3个Bug修复完成 - Bug1: NPC对话结束返回源场景(_dialogReturnScene) - Bug2: 章节事件回溯(_storyEventLog+_checkCurrentChapterTriggers) - Bug3: travelTo按地点类型分流(城镇→sceneTown/野外→enterMiniMap) ### 00:09 - 城主厅+章节奖励领取 - sceneLordHall()、collectChapterReward()、pendingChapterRewards机制 ### 00:27-00:40 - 装备系统大重构 - 7槽位(weapon/helmet/armor/gl",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.39401669502258296,
+      "maxScore": 0.39401669502258296,
+      "firstRecalledAt": "2026-06-20T15:49:55.696Z",
+      "lastRecalledAt": "2026-06-20T15:49:55.696Z",
+      "queryHashes": [
+        "6343c137cbb0"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "game-v5.js",
+        "龙途-手机试玩版.html",
+        "scenetown/野外",
+        "27-00",
+        "weapon/helmet/armor/gl",
+        "根因",
+        "travelto",
+        "末尾"
+      ]
+    },
+    "memory:memory/2026-06-05.md:20:49": {
+      "key": "memory:memory/2026-06-05.md:20:49",
+      "path": "memory/2026-06-05.md",
+      "startLine": 20,
+      "endLine": 49,
+      "source": "memory",
+      "snippet": "guardian_stance, dragon_tongue, fate_eye, mist_walk, poison_clear, nature_shield, arcane_sight, storm_step, dragon_breath, iron_formation, frost_armor_skill, dragon_speech, ash_walk, flame_sense, abyss_eye, shadow_stealth ### 送礼入口补全 - sceneShop: 新增🎁送礼按钮 + showGiftPanel的shop场景NPC映射 - sceneGuild: 新增🎁送礼按钮 + showGiftPanel的guild场景NPC映射 ### 数据格式修复 - sceneNpcRelations: NPC_DEFS是对象不是数组，用for-in遍历，用npc.loc替代npc.location - _renderNpcRelationCard: tier是对象，取tier.title/tier.emoji/tier.color；likes显示中文名 - completeQuest: NPC_DEFS查找从.find改为for-in遍历 ### 战斗属性集成 - getEffStat(stat): 末尾累加G._npcBuffs中对应stat的buff值 - calcMaxHp: 加_npcBuffs中hp buff - calcAtk: 加_npcBuffs中atk buff - calcDef: 加_npcBuffs中def buff ###",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.39263997375965115,
+      "maxScore": 0.39263997375965115,
+      "firstRecalledAt": "2026-06-20T15:49:55.696Z",
+      "lastRecalledAt": "2026-06-20T15:49:55.696Z",
+      "queryHashes": [
+        "6343c137cbb0"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "guardian-stance",
+        "dragon-tongue",
+        "fate-eye",
+        "mist-walk",
+        "poison-clear",
+        "nature-shield",
+        "arcane-sight",
+        "storm-step"
+      ]
+    }
+  }
+}
