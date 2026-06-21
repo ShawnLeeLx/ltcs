@@ -1950,6 +1950,34 @@ body {
   .mobile-nav .nav-label { font-size: 8px; }
 }
 
+
+/* === Minimap fixed 4-zone layout === */
+body.mm-layout { overflow: hidden; padding-bottom: 0 !important; }
+body.mm-layout #game { flex:1; display:flex; flex-direction:column; padding:0; overflow:hidden; max-height:100dvh; }
+body.mm-layout #status { position:relative; top:auto; z-index:200; font-size:11px; padding:4px 8px; background:#111; border-bottom:1px solid #2a2a2a; flex:0 0 auto; }
+body.mm-layout .mobile-nav { display:flex!important; position:relative; bottom:auto; flex:0 0 auto; background:#111; border-top:1px solid #2a2a2a; padding-bottom:env(safe-area-inset-bottom,0px); }
+.mm-zone-map { flex:1 1 auto; display:flex; flex-direction:column; min-height:0; padding:4px 8px 0; overflow:hidden; }
+.mm-zone-ctrl { flex:0 0 auto; display:flex; flex-direction:row; align-items:stretch; gap:8px; padding:6px 8px; background:#111; border-top:1px solid #2a2a2a; min-height:110px; }
+.mm-header { display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:12px; margin-bottom:2px; flex:0 0 auto; }
+.mm-title { font-weight:bold; color:var(--accent); font-size:13px; }
+.mm-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; color:#aaa; font-size:11px; }
+.mm-weather { color:#88ccff; }
+.mm-radar-item { color:var(--text); cursor:pointer; }
+.mm-path-hint { color:#d4a017; cursor:pointer; }
+.mm-room { font-size:12px; color:var(--text); margin-bottom:4px; flex:0 0 auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mm-map-flex { flex:1 1 auto; min-height:0; height:auto!important; }
+.mm-dpad { flex:0 0 110px; display:flex; flex-direction:column; justify-content:center; gap:4px; }
+.mm-dpad-row { display:flex; justify-content:center; align-items:center; gap:4px; }
+.mm-dbtn { width:36px; height:36px; border:1px solid #555; background:#222; color:var(--text); border-radius:6px; font-size:16px; display:flex; align-items:center; justify-content:center; padding:0; }
+.mm-dbtn:disabled { opacity:0.25; }
+.mm-dbtn:active:not(:disabled) { background:var(--accent); color:#000; }
+.mm-dpad-dot { width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:14px; }
+.mm-acts { flex:1 1 auto; display:grid; grid-template-columns:repeat(3,1fr); gap:4px; align-content:center; }
+.mm-abtn { border:1px solid #444; background:#1a1a1a; color:var(--text); border-radius:6px; font-size:11px; padding:4px 2px; min-height:36px; display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.1; }
+.mm-abtn-pri { border-color:var(--accent); color:var(--accent); }
+.mm-abtn-dng { border-color:#c0392b; color:#e74c3c; }
+.mm-abtn:active { background:var(--accent); color:#000; }
+.mobile-nav.mm-nav-5 .nav-item { flex:1 1 20%; }
 </style>
 </head>
 <body>
@@ -8634,6 +8662,7 @@ function _confirmTravel(locId) {
 // ═══════════════════════════════════════════════════════════
 
 function leaveMiniMap() {
+  _leaveMiniMapLayout();
   // Reset boss defeated status for this location when leaving
   var loc = LOCATIONS[G.location];
   if (loc) {
@@ -8684,6 +8713,7 @@ function leaveMiniMap() {
 }
 
 function _goWorldMapFromMiniMap() {
+  _leaveMiniMapLayout();
   // Go to world map from mini-map (user explicitly requested)
   // Set a flag so sceneWorldMap doesn't auto-redirect back
   G._skipAutoRedirect = true;
@@ -8779,17 +8809,12 @@ function enterMiniMap() {
 function renderMiniMap(msg) {
   var map = getMapForLocation();
   var room = map.rooms[G.miniMapPos.r][G.miniMapPos.c];
-
-  // Reveal adjacent rooms
   var dirs = [{dr:-1,dc:0},{dr:1,dc:0},{dr:0,dc:-1},{dr:0,dc:1}];
   for (var di = 0; di < dirs.length; di++) {
     var nr = G.miniMapPos.r + dirs[di].dr, nc = G.miniMapPos.c + dirs[di].dc;
     var adjRoom = getRoom(map, nr, nc);
     if (adjRoom) adjRoom.revealed = true;
   }
-
-  var html = '';
-  // Calculate exploration percentage
   var totalPassable = 0, totalVisited = 0;
   for (var er = 0; er < map.rooms.length; er++) {
     for (var ec = 0; ec < map.rooms[er].length; ec++) {
@@ -8805,19 +8830,14 @@ function renderMiniMap(msg) {
     toast('📐 完全探索: ' + LOCATIONS[G.location].name + '!');
     checkAchievements();
   }
-
-  ﻿// === D2: Weather bar ===
   var wHtml = '';
   var w = G._weather;
   if (w && WEATHER_TYPES[w]) {
     var wt = WEATHER_TYPES[w];
-    wHtml = '<div class="mini-weather-bar">' + wt.emoji + ' ' + wt.name;
-    if (wt.enemyAtkMod && wt.enemyAtkMod !== 1) wHtml += ' <span style="color:' + (wt.enemyAtkMod > 1 ? '#e74c3c' : '#2ecc71') + '">敌攻' + (wt.enemyAtkMod > 1 ? '↑' : '↓') + '</span>';
-    if (wt.travelMod && wt.travelMod !== 1) wHtml += ' <span style="color:#e67e22">旅行' + (wt.travelMod > 1 ? '慢' : '快') + '</span>';
-    wHtml += '</div>';
+    wHtml = '<span class="mm-weather">' + wt.emoji + ' ' + wt.name;
+    if (wt.enemyAtkMod && wt.enemyAtkMod !== 1) wHtml += (wt.enemyAtkMod > 1 ? ' 🔴' : ' 🟢');
+    wHtml += '</span>';
   }
-
-  // === D2: Mini radar — nearby POIs ===
   var radarHtml = '';
   var radarItems = [];
   var dirs8 = [{dr:-1,dc:0,dir:'北'},{dr:1,dc:0,dir:'南'},{dr:0,dc:-1,dir:'西'},{dr:0,dc:1,dir:'东'},{dr:-1,dc:-1,dir:'西北'},{dr:-1,dc:1,dir:'东北'},{dr:1,dc:-1,dir:'西南'},{dr:1,dc:1,dir:'东南'}];
@@ -8831,137 +8851,72 @@ function renderMiniMap(msg) {
       else if (adjR.type === 'event') poiIcon = '🔍';
       else if (adjR.type === 'trap') poiIcon = '⚠️';
       else if (adjR.type === 'stone') poiIcon = '🪨';
-      if (poiIcon) radarItems.push({ dir: dirs8[ri].dir, icon: poiIcon, type: adjR.type, r: G.miniMapPos.r + dirs8[ri].dr, c: G.miniMapPos.c + dirs8[ri].dc });
+      if (poiIcon) radarItems.push({ dir: dirs8[ri].dir, icon: poiIcon, r: G.miniMapPos.r + dirs8[ri].dr, c: G.miniMapPos.c + dirs8[ri].dc });
     }
   }
   if (radarItems.length > 0) {
-    radarHtml = '<div class="mini-radar">🔭 ';
+    radarHtml = '<span class="mm-radar">🔭 ';
     for (var rj = 0; rj < radarItems.length; rj++) {
       var isAdj = (Math.abs(radarItems[rj].r - G.miniMapPos.r) + Math.abs(radarItems[rj].c - G.miniMapPos.c)) === 1;
-      radarHtml += '<span class="mini-radar-item"' + (isAdj ? ' onclick="clickGridCell(' + radarItems[rj].r + ',' + radarItems[rj].c + ')"' : '') + '><span class="dir">' + radarItems[rj].dir + '</span> ' + radarItems[rj].icon + '</span>';
+      radarHtml += '<span class="mm-radar-item"' + (isAdj ? ' onclick="clickGridCell(' + radarItems[rj].r + ',' + radarItems[rj].c + ')"' : '') + '>' + radarItems[rj].dir + radarItems[rj].icon + '</span> ';
     }
-    radarHtml += '</div>';
+    radarHtml += '</span>';
   }
-
-  // === D2: Path hints to nearest unvisited special room ===
   var pathHintHtml = '';
   var _nearestSpecial = _findNearestSpecialRoom(map, G.miniMapPos.r, G.miniMapPos.c);
   if (_nearestSpecial) {
     var _hintDir = _nearestSpecial.firstDir;
-    var _hintIcon = _nearestSpecial.icon;
-    var _hintDist = _nearestSpecial.dist;
-    var _hintType = _nearestSpecial.typeLabel;
-    pathHintHtml = '<div class="mini-path-hint" onclick="moveGrid(\'' + (_hintDir.dr > 0 ? '1' : _hintDir.dr < 0 ? '-1' : '0') + '\',\'' + (_hintDir.dc > 0 ? '1' : _hintDir.dc < 0 ? '-1' : '0') + '\')">';
-    pathHintHtml += '<span class="arrow">➤</span> ' + _hintIcon + ' ' + _hintType + ' 距离' + _hintDist + '步 → 向' + (_hintDir.dr < 0 ? '北' : _hintDir.dr > 0 ? '南' : '') + (_hintDir.dc < 0 ? '西' : _hintDir.dc > 0 ? '东' : '') + '前进';
-    pathHintHtml += '</div>';
+    var dirName = (_hintDir.dr < 0 ? '北' : _hintDir.dr > 0 ? '南' : '') + (_hintDir.dc < 0 ? '西' : _hintDir.dc > 0 ? '东' : '');
+    pathHintHtml = '<span class="mm-path-hint" onclick="moveGrid(\'' + (_hintDir.dr > 0 ? '1' : _hintDir.dr < 0 ? '-1' : '0') + '\',\'' + (_hintDir.dc > 0 ? '1' : _hintDir.dc < 0 ? '-1' : '0') + '\')">➤' + _nearestSpecial.icon + _nearestSpecial.dist + '步' + dirName + '</span>';
   }
-
-  // === D2: Map legend (collapsible) ===
-  var legendHtml = '<details style="margin:4px 0"><summary style="color:#666;font-size:0.8em;cursor:pointer">🗺️ 图例</summary>';
-  legendHtml += '<div class="map-legend">';
-  legendHtml += '<span class="map-legend-item">🚪入口</span>';
-  legendHtml += '<span class="map-legend-item">⚔️敌人</span>';
-  legendHtml += '<span class="map-legend-item">👑Boss</span>';
-  legendHtml += '<span class="map-legend-item">💀精锐</span>';
-  legendHtml += '<span class="map-legend-item">📦宝箱</span>';
-  legendHtml += '<span class="map-legend-item">🔍事件</span>';
-  legendHtml += '<span class="map-legend-item">⚠️陷阱</span>';
-  legendHtml += '<span class="map-legend-item">🪨石堆</span>';
-  legendHtml += '<span class="map-legend-item">💧水域</span>';
-  legendHtml += '<span class="map-legend-item" style="color:#d4a017">● 你</span>';
-  legendHtml += '</div></details>';
-
-  html += '<div class="scene-title">' + map.name + ' <span style="font-size:0.7em;color:#888">🔍 ' + explorePct + '%</span></div>';
-  if (msg) html += '<div class="mini-msg">' + msg + '</div>';
-
-  ﻿// === D2: Show weather + radar + path hint ===
-  html += wHtml;
-  html += radarHtml;
-  html += pathHintHtml;
-
-  // Current room info
-  var typeLabel = '';
-  var typeHint = '';
-  if (room.type === 'boss') { typeLabel = ' 👑'; typeHint = '危险区域'; }
-  else if (room.type === 'elite') { typeLabel = ' 💀'; typeHint = '精锐敌人盘踞此处'; }
-  else if (room.type === 'treasure') { typeLabel = ' 📦'; typeHint = '有宝藏'; }
-  else if (room.type === 'enemy') { typeLabel = ' ⚔️'; typeHint = '有敌人出没'; }
-  else if (room.type === 'trap') { typeLabel = ' ⚠️'; typeHint = '有陷阱!'; }
-  else if (room.type === 'event') { typeLabel = ' 🔍'; typeHint = '可以调查'; }
-  else if (room.type === 'water') { typeLabel = ' 💧'; typeHint = '水域,无法通行'; }
-  else if (room.type === 'start') { typeLabel = ' 🚪'; typeHint = '入口'; }
-  else if (room.type === 'wall') { typeLabel = ''; typeHint = ''; }
-  html += '<div class="mini-area">';
-  html += '<div class="mini-area-name">' + typeLabel + ' ' + room.name + '</div>';
-  html += '<div class="mini-area-desc">' + room.desc + (typeHint ? '<br><span style="color:#888;font-size:0.85em">' + typeHint + '</span>' : '') + '</div>';
+  var typeLabel = '', typeHint = '';
+  if (room.type === 'boss') { typeLabel = '👑'; typeHint = '危险'; }
+  else if (room.type === 'elite') { typeLabel = '💀'; typeHint = '精锐'; }
+  else if (room.type === 'treasure') { typeLabel = '📦'; typeHint = '宝藏'; }
+  else if (room.type === 'enemy') { typeLabel = '⚔️'; typeHint = '敌人'; }
+  else if (room.type === 'trap') { typeLabel = '⚠️'; typeHint = '陷阱'; }
+  else if (room.type === 'event') { typeLabel = '🔍'; typeHint = '事件'; }
+  else if (room.type === 'start') { typeLabel = '🚪'; typeHint = '入口'; }
+  else if (room.type === 'stone') { typeLabel = '🪨'; typeHint = '石堆'; }
+  // ═══ 四区域固定布局 ═══
+  var html = '';
+  // ③ 地图区域
+  html += '<div class="mm-zone-map">';
+  html += '<div class="mm-header">';
+  html += '<span class="mm-title">' + map.name + ' 🔍' + explorePct + '%</span>';
+  html += '<span class="mm-meta">' + wHtml + radarHtml + pathHintHtml + '</span>';
   html += '</div>';
-
-  // Grid mini map - camera-follow viewport
-  html += '<div id="mapViewport" class="mini-map-grid" style="overflow:hidden;-webkit-overflow-scrolling:touch;height:320px;position:relative;border:1px solid #333;border-radius:8px;background:#0a0a0a">';
-  html += '<div id="mapLayer" style="position:absolute;will-change:transform;transition:transform 0.18s ease-out">';
-  html += renderGridMap(map, G.miniMapPos.r, G.miniMapPos.c);
+  if (typeLabel) html += '<div class="mm-room">' + typeLabel + ' ' + room.name + ' <span style="color:#888;font-size:0.8em">' + typeHint + '</span></div>';
+  html += '<div id="mapViewport" class="mini-map-grid mm-map-flex" style="overflow:hidden;-webkit-overflow-scrolling:touch;position:relative;border:1px solid #333;border-radius:6px;background:#0a0a0a">' +
+          '<div id="mapLayer" style="position:absolute;will-change:transform;transition:transform 0.18s ease-out">' +
+          renderGridMap(map, G.miniMapPos.r, G.miniMapPos.c) +
+          '</div></div>';
   html += '</div>';
-  html += '</div>';
-
-  // Direction buttons (N/S/E/W) + Room actions
-  html += '<div class="mini-controls">';
-
-  // Movement buttons - 3x3 grid layout
-  html += '<div class="move-grid">';
+  // ② 控制区域
+  html += '<div class="mm-zone-ctrl">';
   var canN = canMove(map, G.miniMapPos.r - 1, G.miniMapPos.c);
   var canS = canMove(map, G.miniMapPos.r + 1, G.miniMapPos.c);
   var canW = canMove(map, G.miniMapPos.r, G.miniMapPos.c - 1);
   var canE = canMove(map, G.miniMapPos.r, G.miniMapPos.c + 1);
-  html += '<div></div>';
-  html += '<button class="move-btn" onclick="moveGrid(\'-1\',\'0\')" ' + (canN ? '' : 'disabled') + '>⬆️ 北</button>';
-  html += '<div></div>';
-  html += '<button class="move-btn" onclick="moveGrid(\'0\',\'-1\')" ' + (canW ? '' : 'disabled') + '>⬅️ 西</button>';
-  html += '<div class="move-center">●</div>';
-  html += '<button class="move-btn" onclick="moveGrid(\'0\',\'1\')" ' + (canE ? '' : 'disabled') + '>➡️ 东</button>';
-  html += '<div></div>';
-  html += '<button class="move-btn" onclick="moveGrid(\'1\',\'0\')" ' + (canS ? '' : 'disabled') + '>⬇️ 南</button>';
-  html += '<div></div>';
-  html += '</div>';
-
-  // Room-specific actions
-  html += '<div class="mini-actions">';
-  // Enemies auto-trigger on step - no search button needed
-  if (room.type === 'treasure') {
-    html += '<button class="btn btn-primary" onclick="miniMapTreasure()">📦 搜索宝藏</button>';
-  } else if (room.type === 'boss') {
-    html += '<button class="btn btn-danger" onclick="miniMapBoss()">👑 挑战首领</button>';
-  } else if (room.type === 'elite') {
-    html += '<button class="btn btn-danger" onclick="miniMapElite()">💀 挑战精锐</button>';
-  } else if (room.type === 'trap') {
-    if (G.origin && G.origin.id === 'hunter') {
-      html += '<button class="btn" onclick="miniMapTrap()">🕸️ 拆除陷阱(安全)</button>';
-    } else {
-      html += '<button class="btn btn-danger" onclick="miniMapTrap()">⚠️ 尝试拆除陷阱</button>';
-    }
-  } else if (room.type === 'event') {
-    html += '<button class="btn" onclick="miniMapEvent()">🔍 调查</button>';
-  } else if (room.type === 'grass' || room.type === 'plain') {
-    var _loc4 = LOCATIONS[G.location];
-    html += '<button class="btn" onclick="miniMapLookAround()">🌿 观察四周</button>';
-  } else if (room.type === 'stone') {
-    html += '<button class="btn" onclick="miniMapStone()">🪨 调查石堆</button>';
-  }
-  html += '<button class="btn" onclick="miniMapLookAround()">🌿 观察四周</button>';
-  html += '<button class="btn" onclick="_toggleMapMarker()">📌 标记</button>';
-  html += '<button class="btn" onclick="leaveMiniMap()">🏰 返回城镇</button>';
-  html += '<button class="btn" onclick="_goWorldMapFromMiniMap()">🗺️ 世界地图</button>';
-  html += '<button class="btn" onclick="sceneInventoryFromExplore()">🎒 背包</button>';
-  html += '<button class="btn" onclick="sceneEquipmentFromExplore()">⚔️ 装备</button>';  html += '<button class="btn" onclick="_showStatusFromExplore()">👤 状态</button>';
-  html += '<button class="btn" onclick="_showQuestsFromExplore()">📜 任务</button>';
-  html += '</div>';
-
-  // === D2: Legend ===
-  html += legendHtml;
-
-  html += '</div>';
+  html += '<div class="mm-dpad">' +
+          '<div class="mm-dpad-row"><div></div><button class="mm-dbtn" onclick="moveGrid(\'-1\',\'0\')" ' + (canN ? '' : 'disabled') + '>⬆</button><div></div></div>' +
+          '<div class="mm-dpad-row"><button class="mm-dbtn" onclick="moveGrid(\'0\',\'-1\')" ' + (canW ? '' : 'disabled') + '>⬅</button><div class="mm-dpad-dot">●</div><button class="mm-dbtn" onclick="moveGrid(\'0\',\'1\')" ' + (canE ? '' : 'disabled') + '>➡</button></div>' +
+          '<div class="mm-dpad-row"><div></div><button class="mm-dbtn" onclick="moveGrid(\'1\',\'0\')" ' + (canS ? '' : 'disabled') + '>⬇</button><div></div></div>' +
+          '</div>';
+  html += '<div class="mm-acts">';
+  if (room.type === 'treasure') html += '<button class="mm-abtn mm-abtn-pri" onclick="miniMapTreasure()">📦搜索</button>';
+  else if (room.type === 'boss') html += '<button class="mm-abtn mm-abtn-dng" onclick="miniMapBoss()">👑挑战</button>';
+  else if (room.type === 'elite') html += '<button class="mm-abtn mm-abtn-dng" onclick="miniMapElite()">💀精锐</button>';
+  else if (room.type === 'trap') html += '<button class="mm-abtn mm-abtn-dng" onclick="miniMapTrap()">⚠️拆除</button>';
+  else if (room.type === 'event') html += '<button class="mm-abtn" onclick="miniMapEvent()">🔍调查</button>';
+  else if (room.type === 'stone') html += '<button class="mm-abtn" onclick="miniMapStone()">🪨石堆</button>';
+  else html += '<button class="mm-abtn" onclick="miniMapLookAround()">🌿观察</button>';
+  html += '<button class="mm-abtn" onclick="leaveMiniMap()">🏰回城</button>';
+  html += '<button class="mm-abtn" onclick="_goWorldMapFromMiniMap()">🗺️地图</button>';
+  html += '</div></div>';
   render(html);
-  // Camera-follow: center map on player position
-  // On first entry (no _prevMapPos), snap instantly; on moves, animate
+  document.body.classList.add('mm-layout');
+  _setMiniMapNav();
   if (G._prevMapPos && (G._prevMapPos.r !== G.miniMapPos.r || G._prevMapPos.c !== G.miniMapPos.c)) {
     centerMapOnPlayerAnimated();
   } else {
@@ -8970,10 +8925,35 @@ function renderMiniMap(msg) {
   }
 }
 
+
+function _setMiniMapNav() {
+  var nav = document.getElementById('mobileNav');
+  if (!nav) return;
+  nav.classList.add('mm-nav-5');
+  nav.innerHTML = '<div class="nav-item" onclick="_showStatusFromExplore()"><span class="nav-emoji">👤</span><span class="nav-label">状态</span></div>' +
+    '<div class="nav-item" onclick="sceneInventoryFromExplore()"><span class="nav-emoji">🎒</span><span class="nav-label">背包</span></div>' +
+    '<div class="nav-item" onclick="sceneEquipmentFromExplore()"><span class="nav-emoji">⚔️</span><span class="nav-label">装备</span></div>' +
+    '<div class="nav-item" onclick="_showQuestsFromExplore()"><span class="nav-emoji">📜</span><span class="nav-label">任务</span></div>' +
+    '<div class="nav-item" onclick="sceneSaveLoad()"><span class="nav-emoji">💾</span><span class="nav-label">存档</span></div>';
+}
+
+function _leaveMiniMapLayout() {
+  document.body.classList.remove('mm-layout');
+  var nav = document.getElementById('mobileNav');
+  if (nav) {
+    nav.classList.remove('mm-nav-5');
+    nav.innerHTML = '<div class="nav-item" onclick="sceneTown()"><span class="nav-emoji">🏰</span><span class="nav-label">城镇</span></div>' +
+      '<div class="nav-item" onclick="sceneInventory()"><span class="nav-emoji">🎒</span><span class="nav-label">背包</span></div>' +
+      '<div class="nav-item" onclick="_playerInfoReturnTo=G._currentScene||\'sceneTown\';scenePlayerInfo()"><span class="nav-emoji">👤</span><span class="nav-label">角色</span></div>' +
+      '<div class="nav-item" onclick="sceneEquipmentFromTown()"><span class="nav-emoji">⚔️</span><span class="nav-label">装备</span></div>' +
+      '<div class="nav-item" onclick="sceneSaveLoad()"><span class="nav-emoji">💾</span><span class="nav-label">存档</span></div>';
+  }
+}
+
 function renderGridMap(map, curR, curC) {
   var cols = map.cols;
   var rows = map.rows;
-  var cellSize = 52; // P0-3: larger cells for touch/mobile
+  var cellSize = 36; // Compact cells for 4-zone layout
   var gap = 2;
 
   var totalW = cols * (cellSize + gap);
