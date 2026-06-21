@@ -1978,6 +1978,13 @@ body.mm-layout .mobile-nav { display:flex!important; position:relative; bottom:a
 .mm-abtn-dng { border-color:#c0392b; color:#e74c3c; }
 .mm-abtn:active { background:var(--accent); color:#000; }
 .mobile-nav.mm-nav-5 .nav-item { flex:1 1 20%; }
+
+/* Battle menu - Xianjian style */
+.btl-menu { flex-wrap: wrap; gap: 6px; justify-content: center; }
+.btn-defend { background: linear-gradient(135deg,#37474f,#263238); color: #90caf9; }
+.btn-item { background: linear-gradient(135deg,#4a2a1a,#3a1a0a); color: #ffb74d; }
+.btn-defend:active { background: var(--accent); color: #000; }
+.btn-item:active { background: var(--accent); color: #000; }
 </style>
 </head>
 <body>
@@ -10409,73 +10416,166 @@ function renderBattle(msg) {
   html += '<div id="battleEffect" class="battle-effect-layer" style="display:none"></div>';
 
   // === ACTION BUTTONS ===
-  html += '<div class="battle-actions">';
-  html += '<button class="btn btn-atk" onclick="G._battleAction=\'attack\';toast(\'⚔️ 选择攻击目标\')">⚔️ 攻击</button>';
-  // D1: Quick attack - auto-selects next alive enemy and attacks
-  html += '<button class="btn btn-atk" style="font-size:0.85em" onclick="quickAttack()">⚔️⚡</button>';
+  // 仙剑式战斗菜单: 攻/术/物/防/逃
+  html += '<div class="battle-actions btl-menu">';
 
-  if (G.origin && G.origin.skill && G.origin.skill.type !== '被动') {
-    html += '<button class="btn btn-skill" id="btn_skill" onclick="useOriginSkill()">' + G.origin.skill.emoji + ' ' + G.origin.skill.name + '</button>';
-  }
+  // 攻击
+  html += '<button class="btn btn-atk" onclick="G._battleAction=\'attack\';toast(\'⚔️ 选择攻击目标\')">⚔️ 攻</button>';
 
-  // Q21: Skills shown as expandable groups
-  if (G.skills && G.skills.length > 0) {
-    var spells = [];
-    var combatSkills = [];
-    for (var si = 0; si < G.skills.length; si++) {
-      var sk = SKILLS.find(function(s) { return s.id === G.skills[si]; });
-      if (sk) {
-        if (sk.category === 'spell') spells.push(sk);
-        else combatSkills.push(sk);
+  // 术 - unified skill/spell menu
+  var hasAnySkill = (G.skills && G.skills.length > 0) || (G.origin && G.origin.skill && G.origin.skill.type !== '被动');
+  if (hasAnySkill) {
+    html += '<button class="btn btn-skill" onclick="G._showSkillMenu=!G._showSkillMenu;renderBattle()">📖 术 ' + (G._showSkillMenu ? '▼' : '▶') + '</button>';
+    if (G._showSkillMenu) {
+      if (G.origin && G.origin.skill && G.origin.skill.type !== '被动') {
+        var osk = G.origin.skill;
+        var oskCanUse = G.mp >= (osk.cost || 0);
+        html += '<button class="btn btn-skill' + (!oskCanUse ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em" onclick="useOriginSkill()">' + osk.emoji + ' ' + osk.name + ' <span class="skill-cost">' + (osk.cost||0) + '💧</span></button>';
       }
-    }
-    if (spells.length > 0) {
-      html += '<button class="btn btn-skill" onclick="G._showSpells=!G._showSpells;renderBattle()">🔮 法术 ' + (G._showSpells ? '▼' : '▶') + '</button>';
-      if (G._showSpells) {
-        for (var sp = 0; sp < spells.length; sp++) {
-          var ssk = spells[sp];
-          var canUse = G.mp >= ssk.cost;
-          var onCd = G._skillCooldowns && G._skillCooldowns[ssk.id] && G._skillCooldowns[ssk.id] > 0;
-          var targetIcon = ssk.target === '群攻' ? '🎯A' : ssk.target === '自身' ? '🛡️' : '🎯1';
-          var cdLabel = onCd ? ' <span class="skill-cd">⏳' + G._skillCooldowns[ssk.id] + '</span>' : (ssk.cd > 0 ? ' <span class="skill-cd-hint">CD' + ssk.cd + '</span>' : '');
-          html += '<button class="btn btn-skill' + (!canUse || onCd ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd ? '' : ' onclick="G._battleAction=\'skill:' + ssk.id + '\';' + (ssk.target === '自身' ? 'playerSkill(\'' + ssk.id + '\')' : 'toast(\'选择施法目标\')') + '"') + '>' + ssk.emoji + ' ' + ssk.name + ' <span class="skill-meta-inline">' + targetIcon + '</span><span class="skill-cost">' + ssk.cost + '💧</span>' + cdLabel + '</button>';
+      if (G.skills && G.skills.length > 0) {
+        var spells = [], combatSkills = [];
+        for (var si = 0; si < G.skills.length; si++) {
+          var sk = SKILLS.find(function(s) { return s.id === G.skills[si]; });
+          if (sk) { if (sk.category === 'spell') spells.push(sk); else combatSkills.push(sk); }
+        }
+        if (spells.length > 0) {
+          html += '<div style="margin-left:8px;font-size:0.8em;color:#888;padding:2px 0">🔮 法术</div>';
+          for (var sp = 0; sp < spells.length; sp++) {
+            var ssk = spells[sp];
+            var canUse = G.mp >= ssk.cost;
+            var onCd = G._skillCooldowns && G._skillCooldowns[ssk.id] && G._skillCooldowns[ssk.id] > 0;
+            var targetIcon = ssk.target === '群攻' ? '🎯A' : ssk.target === '自身' ? '🛡️' : '🎯1';
+            var cdLabel = onCd ? ' <span class="skill-cd">⏳' + G._skillCooldowns[ssk.id] + '</span>' : (ssk.cd > 0 ? ' <span class="skill-cd-hint">CD' + ssk.cd + '</span>' : '');
+            html += '<button class="btn btn-skill' + (!canUse || onCd ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd ? '' : ' onclick="G._battleAction=\'skill:' + ssk.id + '\';' + (ssk.target === '自身' ? 'playerSkill(\'' + ssk.id + '\')' : 'toast(\'选择施法目标\')') + '"') + '>' + ssk.emoji + ' ' + ssk.name + ' ' + targetIcon + '<span class="skill-cost">' + ssk.cost + '💧</span>' + cdLabel + '</button>';
+          }
+        }
+        if (combatSkills.length > 0) {
+          html += '<div style="margin-left:8px;font-size:0.8em;color:#888;padding:2px 0">🥊 技能</div>';
+          for (var cs = 0; cs < combatSkills.length; cs++) {
+            var csk = combatSkills[cs];
+            var canUse2 = G.mp >= csk.cost;
+            var onCd2 = G._skillCooldowns && G._skillCooldowns[csk.id] && G._skillCooldowns[csk.id] > 0;
+            var targetIcon2 = csk.target === '群攻' ? '🎯A' : csk.target === '自身' ? '🛡️' : '🎯1';
+            var cdLabel2 = onCd2 ? ' <span class="skill-cd">⏳' + G._skillCooldowns[csk.id] + '</span>' : (csk.cd > 0 ? ' <span class="skill-cd-hint">CD' + csk.cd + '</span>' : '');
+            html += '<button class="btn btn-skill' + (!canUse2 || onCd2 ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd2 ? '' : ' onclick="G._battleAction=\'skill:' + csk.id + '\';' + (csk.target === '自身' ? 'playerSkill(\'' + csk.id + '\')' : 'toast(\'选择攻击目标\')') + '"') + '>' + csk.emoji + ' ' + csk.name + ' ' + targetIcon2 + '<span class="skill-cost">' + csk.cost + '💧</span>' + cdLabel2 + '</button>';
+          }
         }
       }
     }
-    if (combatSkills.length > 0) {
-      html += '<button class="btn btn-skill" onclick="G._showCombatSkills=!G._showCombatSkills;renderBattle()">🥊 技能 ' + (G._showCombatSkills ? '▼' : '▶') + '</button>';
-      if (G._showCombatSkills) {
-        for (var cs = 0; cs < combatSkills.length; cs++) {
-          var csk = combatSkills[cs];
-          var canUse2 = G.mp >= csk.cost;
-          var onCd2 = G._skillCooldowns && G._skillCooldowns[csk.id] && G._skillCooldowns[csk.id] > 0;
-          var targetIcon2 = csk.target === '群攻' ? '🎯A' : csk.target === '自身' ? '🛡️' : '🎯1';
-          var cdLabel2 = onCd2 ? ' <span class="skill-cd">⏳' + G._skillCooldowns[csk.id] + '</span>' : (csk.cd > 0 ? ' <span class="skill-cd-hint">CD' + csk.cd + '</span>' : '');
-          html += '<button class="btn btn-skill' + (!canUse2 || onCd2 ? ' btn-disabled' : '') + '" style="margin-left:12px;font-size:0.9em"' + (onCd2 ? '' : ' onclick="G._battleAction=\'skill:' + csk.id + '\';' + (csk.target === '自身' ? 'playerSkill(\'' + csk.id + '\')' : 'toast(\'选择攻击目标\')') + '"') + '>' + csk.emoji + ' ' + csk.name + ' <span class="skill-meta-inline">' + targetIcon2 + '</span><span class="skill-cost">' + csk.cost + '💧</span>' + cdLabel2 + '</button>';
+  }
+
+  // 物 - use items
+  html += '<button class="btn btn-item" onclick="G._showBattleItems=!G._showBattleItems;renderBattle()">🎒 物 ' + (G._showBattleItems ? '▼' : '▶') + '</button>';
+  if (G._showBattleItems) {
+    var battleItems = [];
+    if (G.inventory) {
+      for (var bi = 0; bi < G.inventory.length; bi++) {
+        var bItem = G.inventory[bi];
+        if (bItem.type === 'potion' || bItem.type === 'scroll' || bItem.type === 'food' || bItem.usable) {
+          battleItems.push({ item: bItem, idx: bi });
         }
       }
     }
+    if (battleItems.length === 0) {
+      html += '<div style="margin-left:12px;font-size:0.85em;color:#666;padding:4px 0">背包中无可用品</div>';
+    } else {
+      for (var bi2 = 0; bi2 < Math.min(battleItems.length, 6); bi2++) {
+        var bIt = battleItems[bi2];
+        html += '<button class="btn btn-item" style="margin-left:12px;font-size:0.9em" onclick="useBattleItem(' + bIt.idx + ')">' + (bIt.item.emoji||'📦') + ' ' + bIt.item.name + '</button>';
+      }
+      if (battleItems.length > 6) html += '<div style="margin-left:12px;font-size:0.8em;color:#888">...还有' + (battleItems.length - 6) + '件</div>';
+    }
   }
 
-  html += '<button class="btn btn-flee" onclick="fleeBattle()">🏃 逃跑</button>';
-  var defReduc = Math.floor(calcDef() * 0.6 * 0.5);
-  html += '<button class="btn" onclick="doDefend()" title="减少约' + defReduc + '伤害">🛡️ 防御(-' + defReduc + ')</button>';
-  html += '<button class="btn" onclick="sceneInventoryFromBattle()">🎒 背包</button>';
-  // D1: Auto-battle toggle
+  // 防
+  html += '<button class="btn btn-defend" onclick="doDefend()">🛡️ 防</button>';
+
+  // 逃
+  html += '<button class="btn btn-flee" onclick="fleeBattle()">🏃 逃</button>';
+
+  // R: Repeat last action (仙剑R键)
+  if (G._lastBattleAction) {
+    var repeatLabel = G._lastBattleAction === 'attack' ? '⚔️' : G._lastBattleAction === 'defend' ? '🛡️' : G._lastBattleAction === 'origin' ? (G.origin&&G.origin.skill?G.origin.skill.emoji:'📖') : '📖';
+    html += '<button class="btn" style="background:#333;color:var(--accent);font-size:0.85em" onclick="repeatLastAction()">R ' + repeatLabel + '</button>';
+  }
+
+  // Auto toggle
   if (G._autoBattle) {
-    html += '<button class="btn" style="background:#b71c1c;color:#fff" onclick="stopAutoBattle()">⏹️ 停止自动</button>';
+    html += '<button class="btn" style="background:#b71c1c;color:#fff;font-size:0.8em" onclick="stopAutoBattle()">⏹</button>';
   } else {
-    html += '<button class="btn" style="background:#2e7d32;color:#fff" onclick="startAutoBattle()">▶️ 自动</button>';
+    html += '<button class="btn" style="background:#2e7d32;color:#fff;font-size:0.8em" onclick="startAutoBattle()">▶</button>';
   }
+
   html += '</div>';
 
   render(html);
   updateStatus();
-}
 
-// === D1: Quick attack - auto-select next alive enemy and attack ===
+  // First battle tutorial
+  if (!G._battleTutorialDone && G.battle && G.battle.turn === 1) {
+    G._battleTutorialDone = true;
+    setTimeout(function() {
+      showDialog('⚔️ 战斗指南', '<b>⚔️ 攻</b>：选择敌人进行普通攻击<br>' +
+        '<b>📖 术</b>：展开法术和技能列表<br>' +
+        '<b>🎒 物</b>：使用背包中的药水和物品<br>' +
+        '<b>🛡️ 防</b>：本回合防御，受到伤害减半<br>' +
+        '<b>🏃 逃</b>：尝试逃跑<br>' +
+        '<b>R</b>：重复上回合操作<br>' +
+        '<b>▶</b>：自动战斗', ['明白了']);
+    }, 500);
+  }
+}
+// === Quick attack & Auto-battle system ===
 // === D1: Auto-battle system ===
 var _autoBattleTimer = null;
+
+function repeatLastAction() {
+  if (!G._lastBattleAction) { toast('没有上回合操作'); return; }
+  if (G._lastBattleAction === 'attack') quickAttack();
+  else if (G._lastBattleAction === 'defend') doDefend();
+  else if (G._lastBattleAction === 'skill' && G._lastSkillId) playerSkill(G._lastSkillId);
+  else if (G._lastBattleAction === 'origin') useOriginSkill();
+  else toast('请重新选择操作');
+}
+
+function useBattleItem(idx) {
+  if (!G.inventory || !G.inventory[idx]) return;
+  var item = G.inventory[idx];
+  G._lastBattleAction = 'item';
+  G.inventory.splice(idx, 1);
+  if (item.heal) {
+    G.hp = Math.min(G.maxHp, G.hp + item.heal);
+    G.battle.log.push('🧪 使用' + item.name + '恢复' + item.heal + ' HP');
+    showHealPopup(item.heal);
+  } else if (item.mana) {
+    G.mp = Math.min(G.maxMp, G.mp + item.mana);
+    G.battle.log.push('💧 使用' + item.name + '恢复' + item.mana + ' MP');
+  } else if (item.type === 'scroll') {
+    toast('🚫 战斗中无法使用传送卷轴');
+    G.inventory.splice(idx, 0, item);
+    return;
+  } else if (item.usable && item.effect) {
+    item.effect();
+    G.battle.log.push('📦 使用了' + item.name);
+  } else {
+    toast('此物品无法在战斗中使用');
+    G.inventory.splice(idx, 0, item);
+    return;
+  }
+  G._showBattleItems = false;
+  _afterPlayerAction();
+}
+
+function _afterPlayerAction() {
+  if (!G.battle || !G.inBattle) return;
+  G.battle.turn++;
+  if (G._skillCooldowns) {
+    for (var k in G._skillCooldowns) {
+      if (G._skillCooldowns[k] > 0) G._skillCooldowns[k]--;
+    }
+  }
+  setTimeout(function() { enemyTurn(); }, 400);
+}
 
 function startAutoBattle() {
   if (!G.battle || !G.inBattle) return;
@@ -10534,6 +10634,7 @@ function _runAutoBattle() {
 }
 
 function quickAttack() {
+  G._lastBattleAction = 'attack';
   var b = G.battle;
   if (!b) return;
   // Find next alive enemy (prefer current target if alive, otherwise first alive)
@@ -10861,6 +10962,7 @@ function playerAttack() {
 }
 
 function useOriginSkill() {
+  G._lastBattleAction = 'origin';
   var o = G.origin;
   if (!o || !o.skill) return;
   SFX.play('originSkill');
@@ -11135,6 +11237,7 @@ function _battleDelay(base) {
 }
 
 function doDefend() {
+  G._lastBattleAction = 'defend';
   var b = G.battle;
   if (!b) return;
   SFX.play('defend');
@@ -13767,7 +13870,7 @@ function endBattle() {
   G._burning = 0;
   G._bleeding = 0;
   G._battleAction = null;
-  G._showSpells = false;
+  G._showSpells = false; G._showCombatSkills = false; G._showSkillMenu = false; G._showBattleItems = false; G._battleTutorialDone = false; G._lastBattleAction = null; G._lastSkillId = null;
   G._showCombatSkills = false;
   updateStatus();
 
