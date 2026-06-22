@@ -8677,6 +8677,7 @@ function _confirmTravel(locId) {
 
 function leaveMiniMap() {
   _leaveMiniMapLayout();
+  G._inMiniMap = false;
   // Reset boss defeated status for this location when leaving
   var loc = LOCATIONS[G.location];
   if (loc) {
@@ -8728,6 +8729,7 @@ function leaveMiniMap() {
 
 function _goWorldMapFromMiniMap() {
   _leaveMiniMapLayout();
+  G._inMiniMap = false;
   // Go to world map from mini-map (user explicitly requested)
   // Set a flag so sceneWorldMap doesn't auto-redirect back
   G._skipAutoRedirect = true;
@@ -8930,6 +8932,7 @@ function renderMiniMap(msg) {
   html += '</div></div>';
   render(html);
   document.body.classList.add('mm-layout');
+  G._inMiniMap = true;
   _setMiniMapNav();
   if (G._prevMapPos && (G._prevMapPos.r !== G.miniMapPos.r || G._prevMapPos.c !== G.miniMapPos.c)) {
     centerMapOnPlayerAnimated();
@@ -8953,6 +8956,7 @@ function _setMiniMapNav() {
 
 function _leaveMiniMapLayout() {
   document.body.classList.remove('mm-layout');
+  G._inMiniMap = false;
   var nav = document.getElementById('mobileNav');
   if (nav) {
     nav.classList.remove('mm-nav-5');
@@ -9582,6 +9586,9 @@ function miniMapStone() {
 
 // Universal battle entry — accepts an enemy object or array of enemy objects
 function startBattleWith(enemyOrArray, opts) {
+  // Clean up minimap layout before entering battle
+  _leaveMiniMapLayout();
+  G._inMiniMap = false;
   BGM.play('battle');
   var enemies = Array.isArray(enemyOrArray) ? enemyOrArray : [enemyOrArray];
   for (var i = 0; i < enemies.length; i++) {
@@ -9634,6 +9641,8 @@ function startBattleWith(enemyOrArray, opts) {
 }
 
 function miniMapBattle() {
+  _leaveMiniMapLayout();
+  G._inMiniMap = false;
   var loc = LOCATIONS[G.location];
   var enemyIds = loc.enemies || ['goblin'];
   var count = rand(1, 2);
@@ -9694,6 +9703,8 @@ function miniMapBoss() {
 }
 
 function miniMapElite() {
+  _leaveMiniMapLayout();
+  G._inMiniMap = false;
   // Elite enemies: stronger than normal but weaker than boss, better drops
   var eliteKey = G.location + '_elite_' + G.miniMapPos.r + '_' + G.miniMapPos.c;
   if (G.eliteDefeated && G.eliteDefeated[eliteKey]) {
@@ -9834,6 +9845,8 @@ function _showBossInfo() {
 }
 
 function startBossFight() {
+  _leaveMiniMapLayout();
+  G._inMiniMap = false;
   var bossKey = G.location + '_' + G.miniMapPos.r + '_' + G.miniMapPos.c;
   if (G.bossDefeated[bossKey]) {
     toast('👑 首领已被击败');
