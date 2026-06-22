@@ -7342,6 +7342,7 @@ function importSave(slot) {
 }
 
 function sceneSaveLoad() {
+  _leaveMiniMapLayout();
   var html = '';
   html += '<div class="scene-title">💾 存档/读档</div>';
 
@@ -17061,6 +17062,7 @@ var _questReturnTo = null;     // Tracks where quest UI was opened from, so "返
 var _playerInfoReturnTo = null; // Tracks where player info was opened from
 
 function sceneInventoryFromExplore() {
+  _leaveMiniMapLayout();
   _inventoryReturnTo = 'renderMiniMap';
   sceneInventory();
 }
@@ -17102,6 +17104,7 @@ function _goBackFromQuest() {
 }
 
 function _showStatusFromExplore() {
+  _leaveMiniMapLayout();
   _questReturnTo = 'renderMiniMap';
   _inventoryReturnTo = 'renderMiniMap';
   _playerInfoReturnTo = 'renderMiniMap';
@@ -17180,6 +17183,7 @@ function _showQuestsFromTown() {
 }
 
 function _showQuestsFromExplore() {
+  _leaveMiniMapLayout();
   _questReturnTo = 'renderMiniMap';
   var html = '';
   html += '<div class="scene-title">📜 任务</div>';
@@ -17218,7 +17222,7 @@ function _showQuestsFromExplore() {
     }
     html += '<div style="color:#888;font-size:0.85em;margin-top:4px">进度:' + prog.done + '/' + prog.total + '</div>';
   }
-  html += '<button class="btn" onclick="renderMiniMap()">返回探索</button>';
+  html += '<button class="btn" style="max-width:160px;margin:8px auto 0;display:block" onclick="renderMiniMap()">返回探索</button>';
   render(html);
 }
 
@@ -17229,7 +17233,7 @@ function _showQuestsFromExplore() {
 var _equipmentReturnTo = null;
 
 function sceneEquipmentFromTown() { _equipmentReturnTo = 'sceneTown'; sceneEquipment(); }
-function sceneEquipmentFromExplore() { _equipmentReturnTo = 'renderMiniMap'; sceneEquipment(); }
+function sceneEquipmentFromExplore() { _leaveMiniMapLayout(); _equipmentReturnTo = 'renderMiniMap'; sceneEquipment(); }
 function sceneEquipmentFromBattle() { _equipmentReturnTo = 'renderBattle'; sceneEquipment(); }
 
 function sceneEquipment() {
