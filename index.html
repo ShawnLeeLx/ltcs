@@ -8973,14 +8973,7 @@ function renderGridMap(map, curR, curC) {
   var totalH = rows * (cellSize + gap);
 
   var html = '';
-  // Center viewport on player position
-  var viewW = Math.min(totalW, 320);
-  var viewH = Math.min(totalH, 320);
-  var playerX = curC * (cellSize + gap) + cellSize / 2;
-  var playerY = curR * (cellSize + gap) + cellSize / 2;
-  var vbX = Math.max(0, Math.min(playerX - viewW / 2, totalW - viewW));
-  var vbY = Math.max(0, Math.min(playerY - viewH / 2, totalH - viewH));
-  html += '<svg viewBox="' + vbX + ' ' + vbY + ' ' + viewW + ' ' + viewH + '" class="mini-svg" style="width:100%;max-width:' + viewW + 'px;height:auto;max-height:' + viewH + 'px;display:block;will-change:transform;-webkit-tap-highlight-color:transparent">';
+  html += '<svg viewBox="0 0 ' + totalW + ' ' + totalH + '" class="mini-svg" style="width:' + totalW + 'px;height:' + totalH + 'px;display:block;will-change:transform;-webkit-tap-highlight-color:transparent">';
 
   // SVG defs - terrain patterns
   html += '<defs>';
