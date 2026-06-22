@@ -14209,6 +14209,11 @@ function sceneTown() {
   tickWeather();
   checkStoryTriggers('visit_location', G.location);
   updateStatus();
+  // Remind player about pending chapter rewards
+  var _pendingRw = G.pendingChapterRewards || [];
+  if (_pendingRw.length > 0) {
+    setTimeout(function() { toast('🏛️ 城主厅有' + _pendingRw.length + '份奖赏待领取!'); }, 800);
+  }
   var loc = LOCATIONS[G.location];
   var html = '';
   html += '<div class="scene-title">🏰 ' + loc.name + '</div>';
@@ -16632,9 +16637,6 @@ function completeStoryChapter() {
   var chNum = ch.id.replace(/ch(\d+).*/, '$1');
   if (G._completedChapters.indexOf(chNum) < 0) G._completedChapters.push(chNum);
 
-  autoSave(); // Auto-save on chapter complete
-  toast('💾 章节完成,已自动存档');
-
   // Mark reward as pending (must collect from Lord Hall)
   if (ch.reward) {
     if (!G.pendingChapterRewards) G.pendingChapterRewards = [];
@@ -16646,6 +16648,9 @@ function completeStoryChapter() {
       gold: ch.reward.gold || 0
     });
   }
+
+  autoSave(); // Auto-save on chapter complete (after pendingChapterRewards is set)
+  toast('💾 章节完成,已自动存档');
 
   // Unlock new locations based on chapter progression
   var newUnlocks = CHAPTER_UNLOCKS[ch.id] || [];
@@ -16705,9 +16710,11 @@ function completeStoryChapter() {
     // Show next chapter intro cinematic
     var nextIntro = CHAPTER_INTROS[ch.next];
     if (nextIntro) {
-      html = '';
-      html += '<div class="scene-title">✨ 新篇章</div>';
-      html += '<button class="btn btn-primary" onclick="showChapterIntro(\'' + ch.next + '\')" style="width:100%">查看下一章引言</button>';
+      // Preserve chapter completion info before showing next chapter intro
+      html += '<div class="chapter-next">下一章:<strong>' + (nextIntro.chapter || '') + ':' + (nextIntro.subtitle || '') + '</strong></div>';
+      html += '</div>';
+      html += '<button class="btn btn-primary" onclick="showChapterIntro(\'' + ch.next + '\')" style="width:100%">📖 查看下一章引言</button>';
+      html += '<button class="btn" onclick="sceneTown()" style="width:100%;margin-top:6px">🏰 先返回城镇</button>';
       render(html);
       return;
     }
