@@ -9138,7 +9138,7 @@ function centerMapOnPlayer() {
   var viewport = document.getElementById('mapViewport');
   var layer = document.getElementById('mapLayer');
   if (!viewport || !layer || !G.miniMapPos) return;
-  var cellTotal = 54; // cellSize(52) + gap(2)
+  var cellTotal = 38; // cellSize(36) + gap(2)
   // Calculate where the player cell is in the SVG, then offset to center it
   var px = G.miniMapPos.c * cellTotal + cellTotal / 2;
   var py = G.miniMapPos.r * cellTotal + cellTotal / 2;
@@ -9156,7 +9156,7 @@ function centerMapOnPlayerAnimated() {
   var viewport = document.getElementById('mapViewport');
   var layer = document.getElementById('mapLayer');
   if (!viewport || !layer || !G.miniMapPos) return;
-  var cellTotal = 54; // cellSize(52) + gap(2)
+  var cellTotal = 38; // cellSize(36) + gap(2)
   // First: instantly position at old location (no transition)
   var oldR = G._prevMapPos ? G._prevMapPos.r : G.miniMapPos.r;
   var oldC = G._prevMapPos ? G._prevMapPos.c : G.miniMapPos.c;
